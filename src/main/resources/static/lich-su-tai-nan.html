@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý Gói Bảo hiểm</title>
+    <title>Lịch sử tai nạn</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -14,34 +14,40 @@
             <a href="/users.html" class="nav-link">Người dùng</a>
             <a href="/khach-hang.html" class="nav-link">Khách hàng</a>
             <a href="/xe.html" class="nav-link">Xe</a>
-            <a href="/goi-bao-hiem.html" class="nav-link active">Gói BH</a>
+            <a href="/goi-bao-hiem.html" class="nav-link">Gói BH</a>
             <a href="/ho-so-tham-dinh.html" class="nav-link">Hồ sơ TD</a>
             <a href="/hop-dong.html" class="nav-link">Hợp đồng</a>
             <a href="/thanh-toan.html" class="nav-link">Thanh toán</a>
-            <a href="/lich-su-tai-nan.html" class="nav-link">Lịch sử TN</a>
+            <a href="/lich-su-tai-nan.html" class="nav-link active">Lịch sử TN</a>
             <button class="btn btn-sm" onclick="logout()">Đăng xuất</button>
         </div>
     </nav>
 
     <div class="container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h1>📦 Quản lý Gói Bảo hiểm</h1>
-            <button class="btn btn-primary" onclick="openModal('create')">+ Thêm gói</button>
+            <h1>⚠️ Lịch sử tai nạn</h1>
+            <button class="btn btn-primary" onclick="openModal('create')">+ Ghi nhận tai nạn</button>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" id="searchBienSo" placeholder="Lọc theo biển số xe..." onkeyup="filterTaiNan()">
+            <input type="date" id="fromDate" onchange="filterTaiNan()">
+            <input type="date" id="toDate" onchange="filterTaiNan()">
         </div>
 
         <div class="table-container">
-            <table id="goiBaoHiemTable">
+            <table>
                 <thead>
                     <tr>
-                        <th>Mã gói</th>
-                        <th>Tên gói</th>
+                        <th>Xe</th>
+                        <th>Ngày xảy ra</th>
+                        <th>Địa điểm</th>
                         <th>Mô tả</th>
-                        <th>Phí cơ bản</th>
-                        <th>Trạng thái</th>
+                        <th>Thiệt hại</th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
-                <tbody id="goiBaoHiemTableBody">
+                <tbody id="taiNanTableBody">
                     <tr><td colspan="6" class="text-center">Đang tải...</td></tr>
                 </tbody>
             </table>
@@ -52,31 +58,30 @@
     <div id="modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalTitle">Thêm gói bảo hiểm</h2>
+                <h2 id="modalTitle">Ghi nhận tai nạn</h2>
                 <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
-            <form id="goiBaoHiemForm">
-                <input type="hidden" id="goiBaoHiemId">
+            <form id="taiNanForm">
+                <input type="hidden" id="taiNanId">
                 <div class="form-group">
-                    <label for="tenGoi">Tên gói *</label>
-                    <input type="text" id="tenGoi" required>
+                    <label for="xeId">Xe *</label>
+                    <select id="xeId" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="ngayXayRa">Ngày xảy ra *</label>
+                    <input type="date" id="ngayXayRa" required>
+                </div>
+                <div class="form-group">
+                    <label for="diaDiem">Địa điểm</label>
+                    <input type="text" id="diaDiem">
                 </div>
                 <div class="form-group">
                     <label for="moTa">Mô tả</label>
                     <textarea id="moTa" rows="3"></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="phiCoBan">Phí cơ bản (VNĐ) *</label>
-                    <input type="number" id="phiCoBan" min="0" step="1000" required>
-                </div>
-                <div class="form-group">
-                    <label for="quyenLoi">Quyền lợi</label>
-                    <textarea id="quyenLoi" rows="4"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="active" checked> Kích hoạt
-                    </label>
+                    <label for="thietHai">Thiệt hại (VNĐ)</label>
+                    <input type="number" id="thietHai" min="0" step="1000">
                 </div>
                 <button type="submit" class="btn btn-primary">Lưu</button>
                 <button type="button" class="btn" onclick="closeModal()" style="margin-left: 10px;">Hủy</button>
@@ -87,6 +92,8 @@
 
     <script src="/js/api.js"></script>
     <script src="/js/auth.js"></script>
-    <script src="/js/goi-bao-hiem.js"></script>
+    <script src="/js/lich-su-tai-nan.js"></script>
 </body>
 </html>
+
+

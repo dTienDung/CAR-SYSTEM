@@ -3,26 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chi tiết Hợp đồng bảo hiểm xe</title>
+  <title>Hợp đồng bảo hiểm xe</title>
   <style>
-    body { font-family: Arial, sans-serif; background:#f5f6fa; padding:20px; }
-    .container { max-width: 900px; margin:auto; background:#fff; padding:40px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1); line-height:1.6; }
-    h2, h3 { text-align:center; }
-    h4 { margin-top:20px; }
-    table { width:100%; border-collapse:collapse; margin-top:20px; }
-    td { padding:8px; vertical-align:top; }
-    .label { font-weight:bold; width:180px; }
-    .status-box { padding:6px 12px; display:inline-block; border-radius:6px; color:#fff; font-weight:bold; }
-    .yellow { background:#f1c40f; color:#333; }
-    .green { background:#27ae60; }
-    .orange { background:#e67e22; }
-    .red { background:#e74c3c; }
-    .gray { background:#7f8c8d; }
-    .blue { background:#3498db; }
-    .btn { padding:10px 16px; border:none; border-radius:6px; cursor:pointer; margin-right:10px; margin-top:20px; }
-    .btn-back { background:#3498db; color:#fff; }
-    .btn-export { background:#27ae60; color:#fff; }
-    hr { margin:20px 0; border:none; border-top:1px solid #ddd; }
+  body { font-family: Arial, sans-serif; background:#f5f6fa; padding:20px; }
+  .container { max-width: 900px; margin:auto; background:#fff; padding:40px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1); line-height:1.6; }
+  h2, h3 { text-align:center; }
+  table { width:100%; border-collapse:collapse; margin-top:20px; }
+  td { padding:8px; vertical-align:top; }
+  .label { font-weight:bold; width:180px; }
+  .status { padding:6px 12px; display:inline-block; border-radius:6px; color:#fff; font-weight:bold; }
+  .CHO_THANH_TOAN { background:#f1c40f; }
+  .DANG_HIEU_LUC { background:#27ae60; }
+  .HET_HAN { background:#e67e22; }
+  .DA_HUY { background:#e74c3c; }
+  .NHAP { background:#7f8c8d; }
+  .print-btn { padding:10px 16px; border:none; background:#3498db; color:#fff; border-radius:6px; cursor:pointer; margin-top:20px; }
+  .error-message { color:#e74c3c; margin-top:10px; text-align:center; }
   </style>
 </head>
 <body>
@@ -37,88 +33,60 @@
 
   <h2 style="text-decoration:underline;">HỢP ĐỒNG BẢO HIỂM XE</h2>
 
-  <h3>📄 Thông tin hợp đồng</h3>
   <table>
-    <tr><td class="label">Mã hợp đồng:</td><td id="maHD">Đang tải...</td></tr>
-    <tr><td class="label">Khách hàng:</td><td id="khachHang">Đang tải...</td></tr>
-    <tr><td class="label">Số điện thoại:</td><td id="soDienThoai">Đang tải...</td></tr>
-    <tr><td class="label">Địa chỉ:</td><td id="diaChi">Đang tải...</td></tr>
+    <tr><td class="label">Mã hợp đồng:</td><td><span id="maHopDong">...</span></td></tr>
+    <tr><td class="label">Khách hàng:</td><td><span id="tenKhachHang">...</span></td></tr>
+    <tr><td class="label">Biển số xe:</td><td><span id="bienSoXe">...</span></td></tr>
+    <tr><td class="label">Ngày ký:</td><td><span id="ngayKy">...</span></td></tr>
+    <tr><td class="label">Ngày hiệu lực:</td><td><span id="ngayHieuLuc">...</span></td></tr>
+    <tr><td class="label">Ngày hết hạn:</td><td><span id="ngayHetHan">...</span></td></tr>
+    <tr><td class="label">Tổng phí:</td><td><span id="tongPhi">...</span></td></tr>
+    <tr><td class="label">Đã thanh toán:</td><td><span id="daThanhToan">...</span></td></tr>
+    <tr>
+      <td class="label">Trạng thái:</td>
+      <td><span id="trangThaiLabel" class="status NHAP">NHÁP</span></td>
+    </tr>
   </table>
-
-  <hr />
-
-  <h3>🚗 Thông tin xe</h3>
-  <table>
-    <tr><td class="label">Biển số xe:</td><td id="bienSo">Đang tải...</td></tr>
-    <tr><td class="label">Hãng xe:</td><td id="hangXe">Đang tải...</td></tr>
-    <tr><td class="label">Năm sản xuất:</td><td id="namSanXuat">Đang tải...</td></tr>
-  </table>
-
-  <hr />
-
-  <h3>📋 Thông tin bảo hiểm</h3>
-  <table>
-    <tr><td class="label">Gói bảo hiểm:</td><td id="goiBaoHiem">Đang tải...</td></tr>
-    <tr><td class="label">Mô tả gói:</td><td id="moTaGoi">Đang tải...</td></tr>
-    <tr><td class="label">Ngày ký:</td><td id="ngayKy">Đang tải...</td></tr>
-    <tr><td class="label">Ngày hiệu lực:</td><td id="ngayHieuLuc">Đang tải...</td></tr>
-    <tr><td class="label">Ngày hết hạn:</td><td id="ngayHetHan">Đang tải...</td></tr>
-  </table>
-
-  <hr />
-
-  <h3>💰 Thông tin thanh toán</h3>
-  <table>
-    <tr><td class="label">Tổng phí bảo hiểm:</td><td id="tongPhiBaoHiem">Đang tải...</td></tr>
-    <tr><td class="label">Đã thanh toán:</td><td id="tongDaThanhToan">Đang tải...</td></tr>
-    <tr><td class="label">Còn lại:</td><td id="conLai">Đang tải...</td></tr>
-    <tr><td class="label">Trạng thái:</td><td><span class="status-box green" id="trangThai">Đang tải...</span></td></tr>
-  </table>
-
-  <hr />
-
-  <h3>📝 Lịch sử thanh toán</h3>
-  <div id="paymentHistory">
-    <p style="font-style:italic; color:#666;">Đang tải...</p>
-  </div>
-
-  <hr />
-
-  <h3>📌 Ghi chú</h3>
-  <p id="ghiChu" style="font-style:italic; color:#666;">Không có ghi chú</p>
-
-  <hr />
 
   <h3 style="margin-top:35px;">ĐIỀU KHOẢN HỢP ĐỒNG</h3>
 
-  <h4>Điều 1: Quy định chung</h4>
-  <p>
-  Hợp đồng bảo hiểm (HĐBH) là văn bản thỏa thuận giữa Bên A và Bên B, theo đó Bên A phải đóng đủ phí bảo hiểm,
-  Bên B phải bồi thường cho Bên A hoặc Người thụ hưởng khi xảy ra sự kiện bảo hiểm thuộc trách nhiệm bảo hiểm.
-  Các tài liệu đính kèm HĐBH bao gồm:<br><br>
-  - Giấy yêu cầu bảo hiểm của Bên A (nếu có).<br>
-  - Quy tắc bảo hiểm.<br>
-  - Giấy chứng nhận Bảo hiểm.<br>
-  - Các Phụ lục HĐBH, Sửa đổi bổ sung và thỏa thuận khác bằng văn bản (nếu có).<br><br>
-  Bảo hiểm bắt buộc TNDS của Chủ xe cơ giới: Theo Nghị định số 03/2021/NĐ-CP và Thông tư số 04/2021/TT-BTC.
-  Quy tắc bảo hiểm Tự nguyện Xe Ô Tô được ban hành theo Quyết định số 1855/QĐ-PVIBH.<br><br>
-  Các từ viết tắt, định nghĩa và điều khoản khác trong HĐBH sẽ có cùng ý nghĩa như trong Quy tắc bảo hiểm.
-  Thông tin xe được kê khai đầy đủ, trung thực là căn cứ để bên B giải quyết quyền lợi chính xác.
-  </p>
+<h4>Điều 1: Quy định chung</h4>
+<p>
+Hợp đồng bảo hiểm (HĐBH) là văn bản thỏa thuận giữa Bên A và Bên B, theo đó Bên A phải đóng đủ phí bảo hiểm,
+Bên B phải bồi thường cho Bên A hoặc Người thụ hưởng khi xảy ra sự kiện bảo hiểm thuộc trách nhiệm bảo hiểm.
+Các tài liệu đính kèm HĐBH bao gồm:<br><br>
+- Giấy yêu cầu bảo hiểm của Bên A (nếu có).<br>
+- Quy tắc bảo hiểm.<br>
+- Giấy chứng nhận Bảo hiểm.<br>
+- Các Phụ lục HĐBH, Sửa đổi bổ sung và thỏa thuận khác bằng văn bản (nếu có).<br><br>
+Bảo hiểm bắt buộc TNDS của Chủ xe cơ giới: Theo Nghị định số 03/2021/NĐ-CP và Thông tư số 04/2021/TT-BTC.
+Quy tắc bảo hiểm Tự nguyện Xe Ô Tô được ban hành theo Quyết định số 1855/QĐ-PVIBH.<br><br>
+Các từ viết tắt, định nghĩa và điều khoản khác trong HĐBH sẽ có cùng ý nghĩa như trong Quy tắc bảo hiểm.
+Thông tin xe được kê khai đầy đủ, trung thực là căn cứ để bên B giải quyết quyền lợi chính xác.
+</p>
 
-  <h4>Điều 2: Đối tượng tham gia bảo hiểm</h4>
-  <p>
-  Bên A đồng ý tham gia bảo hiểm cho xe ô tô thuộc sở hữu/quyền quản lý sử dụng hợp pháp của Bên A theo thông tin đã kê khai ở trên.
-  </p>
+<h4>Điều 2: Đối tượng tham gia bảo hiểm</h4>
+<p>
+Bên A đồng ý tham gia bảo hiểm cho xe ô tô thuộc sở hữu/quyền quản lý sử dụng hợp pháp của Bên A:<br>
+- Biển kiểm soát: …<br>
+- Số khung/ Số máy: …<br>
+- Ngày đăng ký lần đầu: …<br>
+- Nhãn hiệu xe: …<br>
+- Năm sản xuất: …<br>
+- Loại hộp số: …<br>
+- Dung tích: … cm3 / … lít<br>
+- Số chỗ/Trọng tải: …<br>
+- Mục đích sử dụng: Không KDVT/ KDVT HĐ/ Taxi công nghệ/ Xe buýt-nội tỉnh.
+</p>
 
-  <h4>Điều 3: Phạm vi bảo hiểm - điều kiện & điều khoản loại trừ</h4>
-  <p>
-  Phạm vi bảo hiểm bao gồm các thiệt hại vật chất xe, tai nạn bất ngờ, cháy nổ, mất cắp toàn bộ hoặc từng phần,
-  cùng các dịch vụ cứu hộ trong phạm vi thỏa thuận. Điều khoản loại trừ bao gồm các trường hợp xe vi phạm pháp luật,
-  không tuân thủ quy định kỹ thuật, cố ý gây thiệt hại hoặc các hành vi gian lận bảo hiểm.
-  </p>
+<h4>Điều 3: Phạm vi bảo hiểm - điều kiện & điều khoản loại trừ</h4>
+<p>
+Phạm vi bảo hiểm bao gồm các thiệt hại vật chất xe, tai nạn bất ngờ, cháy nổ, mất cắp toàn bộ hoặc từng phần,
+cùng các dịch vụ cứu hộ trong phạm vi thỏa thuận. Điều khoản loại trừ bao gồm các trường hợp xe vi phạm pháp luật,
+không tuân thủ quy định kỹ thuật, cố ý gây thiệt hại hoặc các hành vi gian lận bảo hiểm.
+</p>
 
-  <h3 style="margin-top:35px;">CHỮ KÝ XÁC NHẬN</h3>
+<h3 style="margin-top:35px;">CHỮ KÝ XÁC NHẬN</h3>
   <table>
     <tr>
       <td style="text-align:center; padding-top:30px;">
@@ -130,9 +98,9 @@
     </tr>
   </table>
 
-  <div style="margin-top:30px;">
-    <button class="btn btn-back" onclick="history.back()">⬅ Quay lại</button>
-  </div>
+  <div id="errorMessage" class="error-message"></div>
+
+  <button class="print-btn" onclick="window.print()">📄 Xuất hợp đồng</button>
 
 </div>
 

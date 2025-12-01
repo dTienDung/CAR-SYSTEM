@@ -7,8 +7,7 @@
   <style>
     body { font-family: Arial, sans-serif; background:#f5f6fa; padding:20px; }
     .container { max-width: 900px; margin: auto; background:#fff; padding:40px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1); line-height:1.6; }
-    h2 { margin-bottom:20px; }
-    h3 { margin-top:20px; margin-bottom:10px; }
+    h2, h3 { margin-bottom:20px; }
     .section { margin-bottom:20px; }
     .label { font-weight:bold; width:150px; display:inline-block; }
     .value { color:#333; }
@@ -18,20 +17,17 @@
     .red { background:#e74c3c; }
     .btn { padding:10px 16px; border:none; border-radius:6px; cursor:pointer; margin-right:10px; }
     .btn-back { background:#3498db; color:#fff; }
-    .btn-export { background:#27ae60; color:#fff; }
     hr { margin:20px 0; border:none; border-top:1px solid #ddd; }
-    .header-official { text-align:center; margin-bottom:30px; }
-    .header-official h3 { margin:0; font-weight:bold; }
-    .header-official .divider { margin:4px auto 0 auto; width:200px; border-top:1px solid #000; }
+    .error-message { color:#e74c3c; margin-top:10px; text-align:center; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <div class="header-official">
-    <h3>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3>
+  <div style="text-align:center; margin-bottom:30px;">
+    <h3 style="margin:0; font-weight:bold;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3>
     <div style="margin-top:4px;">Độc lập - Tự do - Hạnh phúc</div>
-    <div class="divider"></div>
+    <div style="margin:4px auto 0 auto; width:200px; border-top:1px solid #000;"></div>
   </div>
 
   <h2 style="text-align:center; text-decoration:underline;">HỒ SƠ THẨM ĐỊNH</h2>
@@ -73,6 +69,8 @@
     <h3>📌 Ghi chú thẩm định tự động</h3>
     <p id="autoNote">Đang tải...</p>
   </div>
+
+  <div id="errorMessage" class="error-message"></div>
 
   <div style="margin-top:30px;">
     <button class="btn btn-back" onclick="history.back()">⬅ Quay lại</button>
