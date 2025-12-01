@@ -1,5 +1,6 @@
 // API Base URL
 const API_BASE = '/api';
+const API_BASE_URL = '/api'; // For compatibility with export functions
 
 // Get token from localStorage
 function getToken() {
@@ -146,4 +147,3 @@ function formatCurrency(amount) {
         currency: 'VND'
     }).format(amount);
 }
-
