@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chi tiết Hồ sơ thẩm định</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f5f6fa; padding:20px; }
+    .container { max-width: 900px; margin: auto; background:#fff; padding:40px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1); line-height:1.6; }
+    h2 { margin-bottom:20px; }
+    h3 { margin-top:20px; margin-bottom:10px; }
+    .section { margin-bottom:20px; }
+    .label { font-weight:bold; width:150px; display:inline-block; }
+    .value { color:#333; }
+    .risk-box { display:inline-block; padding:6px 12px; border-radius:6px; color:#fff; font-weight:bold; }
+    .green { background:#27ae60; }
+    .yellow { background:#f1c40f; color:#333; }
+    .red { background:#e74c3c; }
+    .btn { padding:10px 16px; border:none; border-radius:6px; cursor:pointer; margin-right:10px; }
+    .btn-back { background:#3498db; color:#fff; }
+    .btn-export { background:#27ae60; color:#fff; }
+    hr { margin:20px 0; border:none; border-top:1px solid #ddd; }
+    .header-official { text-align:center; margin-bottom:30px; }
+    .header-official h3 { margin:0; font-weight:bold; }
+    .header-official .divider { margin:4px auto 0 auto; width:200px; border-top:1px solid #000; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header-official">
+    <h3>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3>
+    <div style="margin-top:4px;">Độc lập - Tự do - Hạnh phúc</div>
+    <div class="divider"></div>
+  </div>
+
+  <h2 style="text-align:center; text-decoration:underline;">HỒ SƠ THẨM ĐỊNH</h2>
+
+  <div class="section">
+    <h3>📄 Thông tin cơ bản</h3>
+    <div><span class="label">Mã hồ sơ:</span> <span class="value" id="maHS">Đang tải...</span></div>
+    <div><span class="label">Khách hàng:</span> <span class="value" id="khachHang">Đang tải...</span></div>
+    <div><span class="label">Biển số:</span> <span class="value" id="bienSo">Đang tải...</span></div>
+    <div><span class="label">Gói bảo hiểm:</span> <span class="value" id="goiBaoHiem">Đang tải...</span></div>
+    <div><span class="label">Phí bảo hiểm:</span> <span class="value" id="phiBaoHiem">Đang tải...</span></div>
+  </div>
+
+  <hr />
+
+  <div class="section">
+    <h3>🔎 Đánh giá rủi ro</h3>
+    <div><span class="label">Risk Score:</span> <span class="value" id="riskScore">0</span></div>
+    <div><span class="label">Risk Level:</span> <span class="risk-box green" id="riskLevel">Đang tải...</span></div>
+    <div><span class="label">Trạng thái hồ sơ:</span> <span class="value" id="trangThai">Đang tải...</span></div>
+  </div>
+
+  <hr />
+
+  <div class="section" id="chiTietThamDinh">
+    <!-- Chi tiết thẩm định sẽ được load động -->
+  </div>
+
+  <hr />
+
+  <div class="section">
+    <h3>📝 Ghi chú thẩm định</h3>
+    <p id="ghiChu" style="font-style:italic; color:#666;">Không có ghi chú</p>
+  </div>
+
+  <hr />
+
+  <div class="section">
+    <h3>📌 Ghi chú thẩm định tự động</h3>
+    <p id="autoNote">Đang tải...</p>
+  </div>
+
+  <div style="margin-top:30px;">
+    <button class="btn btn-back" onclick="history.back()">⬅ Quay lại</button>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/ho-so-detail.js"></script>
+
+</body>
+</html>

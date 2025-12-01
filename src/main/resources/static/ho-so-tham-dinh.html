@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Hồ sơ Thẩm định</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">🚗 Hệ thống Bảo hiểm Xe</div>
+        <div class="nav-menu">
+            <a href="/dashboard.html" class="nav-link">Dashboard</a>
+            <a href="/users.html" class="nav-link">Người dùng</a>
+            <a href="/khach-hang.html" class="nav-link">Khách hàng</a>
+            <a href="/xe.html" class="nav-link">Xe</a>
+            <a href="/goi-bao-hiem.html" class="nav-link">Gói BH</a>
+            <a href="/ho-so-tham-dinh.html" class="nav-link active">Hồ sơ TD</a>
+            <a href="/hop-dong.html" class="nav-link">Hợp đồng</a>
+            <a href="/thanh-toan.html" class="nav-link">Thanh toán</a>
+            <a href="/tieu-chi-tham-dinh.html" class="nav-link">Tiêu chí TD</a>
+            <a href="/ma-tran-tinh-phi.html" class="nav-link">Ma trận tính phí</a>
+            <button class="btn btn-sm" onclick="logout()">Đăng xuất</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1>📋 Quản lý Hồ sơ Thẩm định</h1>
+            <button class="btn btn-primary" onclick="openModal('create')">+ Tạo hồ sơ</button>
+        </div>
+
+        <div class="search-bar">
+            <select id="trangThaiFilter" onchange="filterHoSo()">
+                <option value="">Tất cả trạng thái</option>
+                <option value="MOI_TAO">Mới tạo</option>
+                <option value="DANG_THAM_DINH">Đang thẩm định</option>
+                <option value="CHAP_NHAN">Chấp nhận</option>
+                <option value="TU_CHOI">Từ chối</option>
+            </select>
+            <select id="riskLevelFilter" onchange="filterHoSo()">
+                <option value="">Tất cả mức rủi ro</option>
+                <option value="CHAP_NHAN">Chấp nhận</option>
+                <option value="XEM_XET">Xem xét</option>
+                <option value="TU_CHOI">Từ chối</option>
+            </select>
+            <button class="btn btn-success" onclick="exportToExcel()" style="margin-left: auto;">📥 Xuất Excel</button>
+        </div>
+
+        <div class="table-container">
+            <table id="hoSoTable">
+                <thead>
+                    <tr>
+                        <th>Mã HS</th>
+                        <th>Khách hàng</th>
+                        <th>Biển số</th>
+                        <th>Gói BH</th>
+                        <th>Risk Score</th>
+                        <th>Risk Level</th>
+                        <th>Trạng thái</th>
+                        <th>Phí BH</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="hoSoTableBody">
+                    <tr><td colspan="9" class="text-center">Đang tải...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Tạo hồ sơ thẩm định</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="hoSoForm">
+                <input type="hidden" id="hoSoId">
+                <div class="form-group">
+                    <label for="khachHangId">Khách hàng *</label>
+                    <select id="khachHangId" required onchange="loadXeByKhachHang()"></select>
+                </div>
+                <div class="form-group">
+                    <label for="xeId">Xe *</label>
+                    <select id="xeId" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="goiBaoHiemId">Gói bảo hiểm *</label>
+                    <select id="goiBaoHiemId" required onchange="loadTieuChi()"></select>
+                </div>
+                
+                <!-- Danh sách tiêu chí thẩm định -->
+                <div id="tieuChiSection" style="display: none; margin-top: 20px;">
+                    <h3>📊 Đánh giá tiêu chí thẩm định</h3>
+                    <div id="tieuChiList"></div>
+                    <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                        <strong>Tổng điểm: <span id="totalScore">0</span></strong><br>
+                        <strong>Mức rủi ro: <span id="riskLevel">-</span></strong><br>
+                        <strong>Phí bảo hiểm: <span id="phiBaoHiem">-</span></strong>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="ghiChu">Ghi chú</label>
+                    <textarea id="ghiChu" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Tạo hồ sơ</button>
+                <button type="button" class="btn" onclick="closeModal()" style="margin-left: 10px;">Hủy</button>
+            </form>
+            <div id="errorMessage" class="error-message"></div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/role.js"></script>
+    <script src="/js/ho-so-tham-dinh.js"></script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Xe</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">🚗 Hệ thống Bảo hiểm Xe</div>
+        <div class="nav-menu">
+            <a href="/dashboard.html" class="nav-link">Dashboard</a>
+            <a href="/users.html" class="nav-link">Người dùng</a>
+            <a href="/khach-hang.html" class="nav-link">Khách hàng</a>
+            <a href="/xe.html" class="nav-link active">Xe</a>
+            <a href="/goi-bao-hiem.html" class="nav-link">Gói BH</a>
+            <a href="/ho-so-tham-dinh.html" class="nav-link">Hồ sơ TD</a>
+            <a href="/hop-dong.html" class="nav-link">Hợp đồng</a>
+            <a href="/thanh-toan.html" class="nav-link">Thanh toán</a>
+            <button class="btn btn-sm" onclick="logout()">Đăng xuất</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1>🚗 Quản lý Xe</h1>
+            <button class="btn btn-primary" onclick="openModal('create')">+ Thêm xe</button>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Tìm kiếm theo biển số, chủ xe..." onkeyup="searchXe()">
+            <button class="btn btn-primary" onclick="searchXe()">Tìm kiếm</button>
+        </div>
+
+        <div class="table-container">
+            <table id="xeTable">
+                <thead>
+                    <tr>
+                        <th>Mã Xe</th>
+                        <th>Biển số</th>
+                        <th>Hãng - Dòng</th>
+                        <th>Chủ xe</th>
+                        <th>Năm SX</th>
+                        <th>Giá trị</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="xeTableBody">
+                    <tr><td colspan="7" class="text-center">Đang tải...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Thêm xe</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="xeForm">
+                <input type="hidden" id="xeId">
+                <div class="form-group">
+                    <label for="khachHangId">Chủ xe (Khách hàng) *</label>
+                    <select id="khachHangId" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="bienSo">Biển số *</label>
+                    <input type="text" id="bienSo" required>
+                </div>
+                <div class="form-group">
+                    <label for="soKhung">Số khung *</label>
+                    <input type="text" id="soKhung" required>
+                </div>
+                <div class="form-group">
+                    <label for="soMay">Số máy</label>
+                    <input type="text" id="soMay">
+                </div>
+                <div class="form-group">
+                    <label for="hangXe">Hãng xe *</label>
+                    <input type="text" id="hangXe" required>
+                </div>
+                <div class="form-group">
+                    <label for="dongXe">Dòng xe *</label>
+                    <input type="text" id="dongXe" required>
+                </div>
+                <div class="form-group">
+                    <label for="namSanXuat">Năm sản xuất *</label>
+                    <input type="number" id="namSanXuat" min="1900" max="2100" required>
+                </div>
+                <div class="form-group">
+                    <label for="namDangKy">Năm đăng ký *</label>
+                    <input type="number" id="namDangKy" min="1900" max="2100" required>
+                </div>
+                <div class="form-group">
+                    <label for="mauSac">Màu sắc *</label>
+                    <input type="text" id="mauSac" required>
+                </div>
+                <div class="form-group">
+                    <label for="mucDichSuDung">Mục đích sử dụng *</label>
+                    <input type="text" id="mucDichSuDung" required>
+                </div>
+                <div class="form-group">
+                    <label for="giaTriXe">Giá trị xe (VNĐ) *</label>
+                    <input type="number" id="giaTriXe" min="0" step="1000" required>
+                </div>
+                <div class="form-group">
+                    <label for="thongTinKyThuat">Thông tin kỹ thuật</label>
+                    <textarea id="thongTinKyThuat" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Lưu</button>
+                <button type="button" class="btn" onclick="closeModal()" style="margin-left: 10px;">Hủy</button>
+            </form>
+            <div id="errorMessage" class="error-message"></div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/xe.js"></script>
+</body>
+</html>
+

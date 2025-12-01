@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Thanh toán</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">🚗 Hệ thống Bảo hiểm Xe</div>
+        <div class="nav-menu">
+            <a href="/dashboard.html" class="nav-link">Dashboard</a>
+            <a href="/users.html" class="nav-link">Người dùng</a>
+            <a href="/khach-hang.html" class="nav-link">Khách hàng</a>
+            <a href="/xe.html" class="nav-link">Xe</a>
+            <a href="/goi-bao-hiem.html" class="nav-link">Gói BH</a>
+            <a href="/ho-so-tham-dinh.html" class="nav-link">Hồ sơ TD</a>
+            <a href="/hop-dong.html" class="nav-link">Hợp đồng</a>
+            <a href="/thanh-toan.html" class="nav-link active">Thanh toán</a>
+            <button class="btn btn-sm" onclick="logout()">Đăng xuất</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1>💰 Quản lý Thanh toán</h1>
+            <button class="btn btn-primary" onclick="openModal('create')">+ Thêm thanh toán</button>
+        </div>
+
+        <div class="table-container">
+            <table id="thanhToanTable">
+                <thead>
+                    <tr>
+                        <th>Mã TT</th>
+                        <th>Mã HĐ</th>
+                        <th>Khách hàng</th>
+                        <th>Số tiền</th>
+                        <th>Phương thức</th>
+                        <th>Ngày thanh toán</th>
+                        <th>Hoàn phí</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="thanhToanTableBody">
+                    <tr><td colspan="8" class="text-center">Đang tải...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Thêm thanh toán</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="thanhToanForm">
+                <div class="form-group">
+                    <label for="hopDongId">Hợp đồng *</label>
+                    <select id="hopDongId" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="soTien">Số tiền (VNĐ) *</label>
+                    <input type="number" id="soTien" min="0" step="1000" required>
+                </div>
+                <div class="form-group">
+                    <label for="phuongThuc">Phương thức *</label>
+                    <select id="phuongThuc" required>
+                        <option value="">-- Chọn --</option>
+                        <option value="TIEN_MAT">Tiền mặt</option>
+                        <option value="CHUYEN_KHOAN">Chuyển khoản</option>
+                        <option value="POS_THE">POS/Thẻ</option>
+                    </select>
+                </div>
+                <div class="form-group" id="soTaiKhoanGroup" style="display: none;">
+                    <label for="soTaiKhoan">Số tài khoản</label>
+                    <input type="text" id="soTaiKhoan">
+                </div>
+                <div class="form-group" id="soTheGroup" style="display: none;">
+                    <label for="soThe">Số thẻ</label>
+                    <input type="text" id="soThe">
+                </div>
+                <div class="form-group">
+                    <label for="ghiChu">Ghi chú</label>
+                    <textarea id="ghiChu" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Lưu</button>
+                <button type="button" class="btn" onclick="closeModal()" style="margin-left: 10px;">Hủy</button>
+            </form>
+            <div id="errorMessage" class="error-message"></div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/thanh-toan.js"></script>
+</body>
+</html>
+

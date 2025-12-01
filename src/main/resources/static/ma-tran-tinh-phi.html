@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Ma trận Tính phí</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">🚗 Hệ thống Bảo hiểm Xe</div>
+        <div class="nav-menu">
+            <a href="/dashboard.html" class="nav-link">Dashboard</a>
+            <a href="/users.html" class="nav-link">Người dùng</a>
+            <a href="/khach-hang.html" class="nav-link">Khách hàng</a>
+            <a href="/xe.html" class="nav-link">Xe</a>
+            <a href="/goi-bao-hiem.html" class="nav-link">Gói BH</a>
+            <a href="/ho-so-tham-dinh.html" class="nav-link">Hồ sơ TD</a>
+            <a href="/tieu-chi-tham-dinh.html" class="nav-link">Tiêu chí TD</a>
+            <a href="/ma-tran-tinh-phi.html" class="nav-link active">Ma trận tính phí</a>
+            <button class="btn btn-sm" onclick="logout()">Đăng xuất</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1>💰 Quản lý Ma trận Tính phí</h1>
+            <button class="btn btn-primary" onclick="openModal('create')">+ Thêm ma trận</button>
+        </div>
+
+        <div class="table-container">
+            <table id="maTranTable">
+                <thead>
+                    <tr>
+                        <th>Điểm rủi ro từ</th>
+                        <th>Điểm rủi ro đến</th>
+                        <th>Hệ số phí</th>
+                        <th>Mô tả</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="maTranTableBody">
+                    <tr><td colspan="6" class="text-center">Đang tải...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Thêm ma trận tính phí</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="maTranForm">
+                <input type="hidden" id="maTranId">
+                <div class="form-group">
+                    <label for="diemRuiRoTu">Điểm rủi ro từ *</label>
+                    <input type="number" id="diemRuiRoTu" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="diemRuiRoDen">Điểm rủi ro đến *</label>
+                    <input type="number" id="diemRuiRoDen" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="heSoPhi">Hệ số phí * (ví dụ: 1.0, 1.2, 1.5...)</label>
+                    <input type="number" id="heSoPhi" min="0.1" step="0.1" required>
+                </div>
+                <div class="form-group">
+                    <label for="moTa">Mô tả</label>
+                    <textarea id="moTa" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="active" checked> Kích hoạt
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary">Lưu</button>
+                <button type="button" class="btn" onclick="closeModal()" style="margin-left: 10px;">Hủy</button>
+            </form>
+            <div id="errorMessage" class="error-message"></div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/ma-tran-tinh-phi.js"></script>
+</body>
+</html>
+

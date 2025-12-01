@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Hệ thống Bảo hiểm Xe</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">🚗 Hệ thống Bảo hiểm Xe</div>
+        <div class="nav-menu">
+            <a href="/dashboard.html" class="nav-link active">Dashboard</a>
+            <a href="/users.html" class="nav-link">Người dùng</a>
+            <a href="/khach-hang.html" class="nav-link">Khách hàng</a>
+            <a href="/xe.html" class="nav-link">Xe</a>
+            <a href="/goi-bao-hiem.html" class="nav-link">Gói BH</a>
+            <a href="/ho-so-tham-dinh.html" class="nav-link">Hồ sơ TD</a>
+            <a href="/hop-dong.html" class="nav-link">Hợp đồng</a>
+            <a href="/thanh-toan.html" class="nav-link">Thanh toán</a>
+            <a href="/tieu-chi-tham-dinh.html" class="nav-link">Tiêu chí TD</a>
+            <a href="/ma-tran-tinh-phi.html" class="nav-link">Ma trận tính phí</a>
+            <a href="/bao-cao.html" class="nav-link">Báo cáo</a>
+            <span class="nav-user" id="userInfo"></span>
+            <button class="btn btn-sm" onclick="logout()">Đăng xuất</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>📊 Dashboard</h1>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Tổng khách hàng</h3>
+                <p class="stat-number" id="totalKhachHang">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Tổng xe</h3>
+                <p class="stat-number" id="totalXe">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Hợp đồng đang hiệu lực</h3>
+                <p class="stat-number" id="totalHopDong">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Hồ sơ thẩm định</h3>
+                <p class="stat-number" id="totalHoSo">0</p>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <h2>Thao tác nhanh</h2>
+            <div class="action-buttons">
+                <a href="/khach-hang.html?action=create" class="btn btn-primary">Thêm khách hàng</a>
+                <a href="/xe.html?action=create" class="btn btn-primary">Thêm xe</a>
+                <a href="/ho-so-tham-dinh.html?action=create" class="btn btn-primary">Tạo hồ sơ thẩm định</a>
+                <a href="/hop-dong.html?action=create" class="btn btn-primary">Tạo hợp đồng</a>
+            </div>
+        </div>
+
+        <!-- DASHBOARD CHARTS -->
+        <h2 style="margin-top: 40px;">📈 Phân tích & Báo cáo</h2>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+            <!-- Chart 1: Vòng đời Hợp đồng -->
+            <div class="chart-container" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <h3 style="color: #667eea; margin-bottom: 15px;">🔄 Vòng đời Hợp đồng</h3>
+                <canvas id="chart1Lifecycle"></canvas>
+            </div>
+
+            <!-- Chart 2: Kết quả Thẩm định -->
+            <div class="chart-container" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <h3 style="color: #667eea; margin-bottom: 15px;">✅ Kết quả Thẩm định</h3>
+                <canvas id="chart2Result"></canvas>
+            </div>
+        </div>
+
+        <!-- Chart 3: Doanh thu Timeline -->
+        <div class="chart-container" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-top: 30px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                <h3 style="color: #667eea; margin: 0;">💰 Doanh thu Thực thu</h3>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <select id="daysSelect" style="padding: 8px; border-radius: 6px; border: 1px solid #ddd;" onchange="handleDateRangeChange()">
+                        <option value="7">7 ngày</option>
+                        <option value="14">14 ngày</option>
+                        <option value="21" selected>21 ngày</option>
+                        <option value="custom">Tùy chỉnh</option>
+                    </select>
+                    <div id="customDateRange" style="display: none; gap: 10px; align-items: center;">
+                        <label style="font-size: 14px;">Từ ngày:</label>
+                        <input type="date" id="startDate" style="padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+                        <button class="btn btn-sm btn-primary" onclick="loadChart3DoanhThu()" style="padding: 8px 16px;">Áp dụng</button>
+                    </div>
+                </div>
+            </div>
+            <canvas id="chart3DoanhThu"></canvas>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px;">
+            <!-- Chart 4: Tỷ lệ Tái tục -->
+            <div class="chart-container" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <h3 style="color: #667eea; margin-bottom: 15px;">🔁 Tỷ lệ Tái tục</h3>
+                <canvas id="chart4TaiTuc"></canvas>
+            </div>
+
+            <!-- Chart 5: Top Rủi ro -->
+            <div class="chart-container" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <h3 style="color: #667eea; margin-bottom: 15px;">⚠️ Top Phương tiện Rủi ro Cao</h3>
+                <canvas id="chart5Risk"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/role.js"></script>
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>
