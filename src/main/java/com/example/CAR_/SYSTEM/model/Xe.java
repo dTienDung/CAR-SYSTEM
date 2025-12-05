@@ -62,8 +62,7 @@ public class Xe {
     @Column(length = 500)
     private String thongTinKyThuat;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "khach_hang_id", nullable = false)
     private KhachHang khachHang;
     
@@ -83,4 +82,3 @@ public class Xe {
     @Builder.Default
     private List<HoSoThamDinh> danhSachHoSo = new ArrayList<>();
 }
-
