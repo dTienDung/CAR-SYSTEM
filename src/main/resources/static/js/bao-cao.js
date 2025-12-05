@@ -30,8 +30,8 @@ async function loadBaoCao(type) {
 
         if (type === 'doanh-thu') {
             renderDoanhThuReport(data, thongKeDiv, chiTietDiv, chartCanvas);
-        } else if (type === 'tai-tuc') {
-            thongKeDiv.innerHTML = `<p><strong>Số hợp đồng tái tục:</strong> ${data.soHopDongTaiTuc || 0}</p>`;
+        } else if (type === 'hop-dong') {
+            renderHopDongReport(data, thongKeDiv, chiTietDiv, chartCanvas);
         } else if (type === 'tham-dinh' && data.countByStatus) {
             renderThamDinhReport(data, thongKeDiv, chiTietDiv, chartCanvas);
         } else if (type === 'khach-hang') {
@@ -512,6 +512,169 @@ function renderKhachHangReport(data, thongKeDiv, chiTietDiv, chartCanvas) {
             </div>
         `;
     }
+}
+
+function renderHopDongReport(data, thongKeDiv, chiTietDiv, chartCanvas) {
+    // KPI Cards
+    const kpiHTML = `
+        <div style="background:#fff;padding:32px;border-radius:16px;margin-bottom:24px;box-shadow:0 8px 24px rgba(0,0,0,0.15);">
+            <h2 style="color:#667eea;margin-bottom:24px;font-size:24px;border-bottom:3px solid #667eea;padding-bottom:12px;">
+                📄 Báo cáo Hợp đồng
+            </h2>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;">
+                <div style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
+                    <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">Tổng hợp đồng</div>
+                    <div style="font-size:32px;font-weight:bold;">${data.tongHopDong || 0}</div>
+                </div>
+                <div style="background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
+                    <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">Tổng phí BH</div>
+                    <div style="font-size:20px;font-weight:bold;">${(data.tongPhiBaoHiem || 0).toLocaleString()} VNĐ</div>
+                </div>
+                <div style="background:linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
+                    <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">Đã thanh toán</div>
+                    <div style="font-size:20px;font-weight:bold;">${(data.tongDaThanhToan || 0).toLocaleString()} VNĐ</div>
+                </div>
+                <div style="background:linear-gradient(135deg, #fa709a 0%, #fee140 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
+                    <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">Còn nợ</div>
+                    <div style="font-size:20px;font-weight:bold;">${(data.tongConNo || 0).toLocaleString()} VNĐ</div>
+                </div>
+                <div style="background:linear-gradient(135deg, #ff9800 0%, #ff5722 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
+                    <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">Sắp hết hạn (30 ngày)</div>
+                    <div style="font-size:28px;font-weight:bold;">${data.hopDongSapHetHan || 0}</div>
+                </div>
+            </div>
+        </div>
+    `;
+    thongKeDiv.innerHTML = kpiHTML;
+
+    // Biểu đồ trạng thái
+    if (data.theoTrangThai && Object.keys(data.theoTrangThai).length > 0) {
+        chartCanvas.style.display = 'block';
+        const ctx = chartCanvas.getContext('2d');
+        
+        const statusColors = {
+            'DRAFT': 'rgba(158, 158, 158, 0.9)',
+            'PENDING_PAYMENT': 'rgba(255, 193, 7, 0.9)',
+            'ACTIVE': 'rgba(76, 175, 80, 0.9)',
+            'EXPIRED': 'rgba(33, 150, 243, 0.9)',
+            'RENEWED': 'rgba(156, 39, 176, 0.9)',
+            'CANCELLED': 'rgba(244, 67, 54, 0.9)'
+        };
+        
+        const labels = Object.keys(data.theoTrangThai);
+        const chartData = Object.values(data.theoTrangThai);
+        const colors = labels.map(l => statusColors[l] || 'rgba(102, 126, 234, 0.9)');
+        
+        baoCaoChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels.map(l => l.replace('_', ' ')),
+                datasets: [{
+                    data: chartData,
+                    backgroundColor: colors,
+                    borderColor: '#fff',
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 15, font: { size: 13 } } },
+                    title: { display: true, text: 'Phân bổ theo trạng thái', font: { size: 18, weight: 'bold' } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+                                return `${ctx.label}: ${ctx.parsed} HĐ (${((ctx.parsed/total)*100).toFixed(1)}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Phân loại
+    let phanLoaiHTML = '<div style="background:#fff;padding:32px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,0.15);margin-top:24px;">';
+    phanLoaiHTML += '<h3 style="color:#667eea;margin-bottom:20px;">📊 Phân loại hợp đồng</h3>';
+    phanLoaiHTML += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;">';
+    
+    // Theo loại quan hệ
+    if (data.theoLoaiQuanHe) {
+        phanLoaiHTML += '<div><h4 style="color:#333;margin-bottom:12px;">🔄 Theo loại quan hệ</h4><ul style="list-style:none;padding:0;">';
+        Object.entries(data.theoLoaiQuanHe).forEach(([key, val]) => {
+            const label = key === 'MOI' ? 'Mới' : (key === 'TAI_TUC' ? 'Tái tục' : key);
+            phanLoaiHTML += `<li style="padding:8px;background:#f5f5f5;margin-bottom:8px;border-radius:8px;"><strong>${label}:</strong> ${val} HĐ</li>`;
+        });
+        phanLoaiHTML += '</ul></div>';
+    }
+    
+    // Top gói bảo hiểm
+    if (data.topGoiBaoHiem) {
+        phanLoaiHTML += '<div><h4 style="color:#333;margin-bottom:12px;">🏆 Top gói bảo hiểm</h4><ul style="list-style:none;padding:0;">';
+        Object.entries(data.topGoiBaoHiem).slice(0, 5).forEach(([key, val]) => {
+            phanLoaiHTML += `<li style="padding:8px;background:#f5f5f5;margin-bottom:8px;border-radius:8px;"><strong>${key}:</strong> ${val} HĐ</li>`;
+        });
+        phanLoaiHTML += '</ul></div>';
+    }
+    
+    phanLoaiHTML += '</div></div>';
+    chiTietDiv.innerHTML = phanLoaiHTML;
+
+    // Bảng chi tiết
+    if (data.chiTiet && data.chiTiet.length > 0) {
+        const tableRows = data.chiTiet.map(hd => `
+            <tr>
+                <td>${hd.maHD}</td>
+                <td>${hd.khachHang || '<em style="color:#999;">N/A</em>'}</td>
+                <td><strong style="color:#667eea;">${hd.xe || '<em style="color:#999;">N/A</em>'}</strong></td>
+                <td>${hd.goiBaoHiem || '<em style="color:#999;">N/A</em>'}</td>
+                <td>${hd.ngayKy || ''}</td>
+                <td>${hd.ngayHieuLuc || ''}</td>
+                <td>${hd.ngayHetHan || ''}</td>
+                <td style="font-weight:bold;color:#4caf50;text-align:right;">${(hd.tongPhi || 0).toLocaleString()} VNĐ</td>
+                <td style="text-align:right;">${(hd.daThanhToan || 0).toLocaleString()} VNĐ</td>
+                <td>${getTrangThaiHDBadge(hd.trangThai)}</td>
+            </tr>
+        `).join('');
+        
+        chiTietDiv.innerHTML += `
+            <div style="background:#fff;padding:32px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,0.15);margin-top:24px;">
+                <h3 style="color:#667eea;margin-bottom:20px;">📋 Chi tiết hợp đồng (${data.chiTiet.length} HĐ gần nhất)</h3>
+                <div style="overflow-x:auto;">
+                    <table class="styled-table">
+                        <thead>
+                            <tr>
+                                <th>Mã HĐ</th>
+                                <th>Khách hàng</th>
+                                <th>Xe</th>
+                                <th>Gói BH</th>
+                                <th>Ngày ký</th>
+                                <th>Hiệu lực</th>
+                                <th>Hết hạn</th>
+                                <th>Tổng phí</th>
+                                <th>Đã TT</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>${tableRows}</tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    }
+}
+
+function getTrangThaiHDBadge(status) {
+    const badges = {
+        'DRAFT': '<span style="background:#9e9e9e;color:#fff;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;">📝 Nháp</span>',
+        'PENDING_PAYMENT': '<span style="background:#ffc107;color:#000;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;">⏳ Chờ TT</span>',
+        'ACTIVE': '<span style="background:#4caf50;color:#fff;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;">✅ Hiệu lực</span>',
+        'EXPIRED': '<span style="background:#2196f3;color:#fff;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;">⏰ Hết hạn</span>',
+        'RENEWED': '<span style="background:#9c27b0;color:#fff;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;">🔄 Tái tục</span>',
+        'CANCELLED': '<span style="background:#f44336;color:#fff;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;">❌ Đã hủy</span>'
+    };
+    return badges[status] || `<span style="background:#999;color:#fff;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;">${status}</span>`;
 }
 
 function getPhuongThucBadge(phuongThuc) {

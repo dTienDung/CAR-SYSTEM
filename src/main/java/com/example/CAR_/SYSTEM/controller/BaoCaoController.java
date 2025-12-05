@@ -170,20 +170,105 @@ public class BaoCaoController {
 
         return ResponseEntity.ok(ApiResponse.success(result));
     }
-    @GetMapping("/tai-tuc")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getTaiTuc(
+    @GetMapping("/hop-dong")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getHopDong(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
 
         Map<String, Object> result = new HashMap<>();
 
-        List<HopDong> hopDongs = hoSoThamDinhServiceImpl.getAll().stream()
-                .flatMap(hs -> hs.getDanhSachHopDong().stream())
-                .filter(hd -> (fromDate == null || !hd.getCreatedAt().toLocalDate().isBefore(fromDate)) &&
-                        (toDate == null || !hd.getCreatedAt().toLocalDate().isAfter(toDate)))
-                .toList();
+        // Lấy tất cả hợp đồng
+        List<HopDong> allHopDong = hopDongRepository.findAll();
 
-        result.put("soHopDongTaiTuc", hopDongs.size());
+        // Lọc theo thời gian nếu có
+        List<HopDong> filteredHopDong = allHopDong;
+        if (fromDate != null || toDate != null) {
+            filteredHopDong = allHopDong.stream()
+                .filter(hd -> {
+                    LocalDate createdDate = hd.getCreatedAt().toLocalDate();
+                    return (fromDate == null || !createdDate.isBefore(fromDate)) &&
+                           (toDate == null || !createdDate.isAfter(toDate));
+                })
+                .collect(Collectors.toList());
+        }
+
+        // Tổng số hợp đồng
+        long tongHopDong = filteredHopDong.size();
+
+        // Phân loại theo trạng thái
+        Map<String, Long> theoTrangThai = filteredHopDong.stream()
+            .collect(Collectors.groupingBy(
+                hd -> hd.getTrangThai() != null ? hd.getTrangThai().name() : "KHAC",
+                Collectors.counting()
+            ));
+
+        // Phân loại theo loại quan hệ
+        Map<String, Long> theoLoaiQuanHe = filteredHopDong.stream()
+            .collect(Collectors.groupingBy(
+                hd -> hd.getLoaiQuanHe() != null ? hd.getLoaiQuanHe().name() : "MOI",
+                Collectors.counting()
+            ));
+
+        // Tổng phí bảo hiểm
+        BigDecimal tongPhiBaoHiem = filteredHopDong.stream()
+            .map(HopDong::getTongPhiBaoHiem)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Tổng đã thanh toán
+        BigDecimal tongDaThanhToan = filteredHopDong.stream()
+            .map(HopDong::getTongDaThanhToan)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Tổng còn nợ
+        BigDecimal tongConNo = tongPhiBaoHiem.subtract(tongDaThanhToan);
+
+        // Hợp đồng sắp hết hạn (30 ngày tới)
+        LocalDate now = LocalDate.now();
+        LocalDate after30Days = now.plusDays(30);
+        long hopDongSapHetHan = allHopDong.stream()
+            .filter(hd -> hd.getNgayHetHan() != null && 
+                         !hd.getNgayHetHan().isBefore(now) && 
+                         !hd.getNgayHetHan().isAfter(after30Days))
+            .count();
+
+        // Top gói bảo hiểm phổ biến
+        Map<String, Long> topGoiBaoHiem = filteredHopDong.stream()
+            .filter(hd -> hd.getGoiBaoHiem() != null)
+            .collect(Collectors.groupingBy(
+                hd -> hd.getGoiBaoHiem().getTenGoi(),
+                Collectors.counting()
+            ));
+
+        // Chi tiết hợp đồng
+        List<Map<String, Object>> chiTiet = filteredHopDong.stream()
+            .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+            .limit(50)
+            .map(hd -> {
+                Map<String, Object> item = new HashMap<>();
+                item.put("maHD", hd.getMaHD());
+                item.put("khachHang", hd.getKhachHang() != null ? hd.getKhachHang().getHoTen() : "");
+                item.put("xe", hd.getXe() != null ? hd.getXe().getBienSo() : "");
+                item.put("goiBaoHiem", hd.getGoiBaoHiem() != null ? hd.getGoiBaoHiem().getTenGoi() : "");
+                item.put("ngayKy", hd.getNgayKy() != null ? hd.getNgayKy().toString() : "");
+                item.put("ngayHieuLuc", hd.getNgayHieuLuc() != null ? hd.getNgayHieuLuc().toString() : "");
+                item.put("ngayHetHan", hd.getNgayHetHan() != null ? hd.getNgayHetHan().toString() : "");
+                item.put("tongPhi", hd.getTongPhiBaoHiem() != null ? hd.getTongPhiBaoHiem() : BigDecimal.ZERO);
+                item.put("daThanhToan", hd.getTongDaThanhToan() != null ? hd.getTongDaThanhToan() : BigDecimal.ZERO);
+                item.put("trangThai", hd.getTrangThai() != null ? hd.getTrangThai().name() : "");
+                item.put("loaiQuanHe", hd.getLoaiQuanHe() != null ? hd.getLoaiQuanHe().name() : "MOI");
+                return item;
+            })
+            .collect(Collectors.toList());
+
+        result.put("tongHopDong", tongHopDong);
+        result.put("theoTrangThai", theoTrangThai);
+        result.put("theoLoaiQuanHe", theoLoaiQuanHe);
+        result.put("tongPhiBaoHiem", tongPhiBaoHiem);
+        result.put("tongDaThanhToan", tongDaThanhToan);
+        result.put("tongConNo", tongConNo);
+        result.put("hopDongSapHetHan", hopDongSapHetHan);
+        result.put("topGoiBaoHiem", topGoiBaoHiem);
+        result.put("chiTiet", chiTiet);
         result.put("fromDate", fromDate);
         result.put("toDate", toDate);
 
