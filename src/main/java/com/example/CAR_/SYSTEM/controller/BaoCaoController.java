@@ -189,6 +189,120 @@ public class BaoCaoController {
 
         return ResponseEntity.ok(ApiResponse.success(result));
     }
+    
+    @GetMapping("/khach-hang")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getKhachHang(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+
+        Map<String, Object> result = new HashMap<>();
+
+        // Lấy tất cả khách hàng
+        List<com.example.CAR_.SYSTEM.model.KhachHang> allKhachHang = 
+            hoSoThamDinhServiceImpl.getAll().stream()
+                .map(HoSoThamDinh::getKhachHang)
+                .filter(kh -> kh != null)
+                .distinct()
+                .collect(Collectors.toList());
+
+        // Lọc theo thời gian nếu có
+        List<com.example.CAR_.SYSTEM.model.KhachHang> filteredKhachHang = allKhachHang;
+        if (fromDate != null || toDate != null) {
+            filteredKhachHang = allKhachHang.stream()
+                .filter(kh -> {
+                    LocalDate createdDate = kh.getCreatedAt().toLocalDate();
+                    return (fromDate == null || !createdDate.isBefore(fromDate)) &&
+                           (toDate == null || !createdDate.isAfter(toDate));
+                })
+                .collect(Collectors.toList());
+        }
+
+        // Tổng số khách hàng
+        long tongKhachHang = filteredKhachHang.size();
+
+        // Phân loại theo giới tính
+        Map<String, Long> theoGioiTinh = filteredKhachHang.stream()
+            .collect(Collectors.groupingBy(
+                kh -> kh.getGioiTinh() != null && !kh.getGioiTinh().isEmpty() ? 
+                    kh.getGioiTinh() : "KHAC",
+                Collectors.counting()
+            ));
+
+        // Phân loại theo nghề nghiệp
+        Map<String, Long> theoNgheNghiep = filteredKhachHang.stream()
+            .collect(Collectors.groupingBy(
+                kh -> kh.getNgheNghiep() != null && !kh.getNgheNghiep().isEmpty() ? 
+                    kh.getNgheNghiep() : "Chưa rõ",
+                Collectors.counting()
+            ));
+
+        // Phân loại theo độ tuổi
+        Map<String, Long> theoDoTuoi = filteredKhachHang.stream()
+            .collect(Collectors.groupingBy(
+                kh -> {
+                    if (kh.getNgaySinh() == null) return "Chưa rõ";
+                    int age = java.time.Period.between(kh.getNgaySinh(), LocalDate.now()).getYears();
+                    if (age < 25) return "Dưới 25";
+                    else if (age < 35) return "25-34";
+                    else if (age < 45) return "35-44";
+                    else if (age < 55) return "45-54";
+                    else return "55+";
+                },
+                Collectors.counting()
+            ));
+
+        // Top khách hàng có nhiều xe nhất
+        List<Map<String, Object>> topKhachHangNhieuXe = filteredKhachHang.stream()
+            .map(kh -> {
+                long soXe = kh.getDanhSachXe() != null ? kh.getDanhSachXe().size() : 0;
+                Map<String, Object> item = new HashMap<>();
+                item.put("maKH", kh.getMaKH());
+                item.put("hoTen", kh.getHoTen());
+                item.put("soXe", soXe);
+                item.put("soDienThoai", kh.getSoDienThoai());
+                item.put("email", kh.getEmail());
+                return item;
+            })
+            .filter(item -> (Long)item.get("soXe") > 0)
+            .sorted((a, b) -> Long.compare((Long)b.get("soXe"), (Long)a.get("soXe")))
+            .limit(10)
+            .collect(Collectors.toList());
+
+        // Top khách hàng có hợp đồng giá trị cao
+        List<Map<String, Object>> topKhachHangGiaTriCao = filteredKhachHang.stream()
+            .map(kh -> {
+                BigDecimal tongGiaTri = kh.getDanhSachHopDong() != null ?
+                    kh.getDanhSachHopDong().stream()
+                        .map(HopDong::getTongPhiBaoHiem)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add) :
+                    BigDecimal.ZERO;
+                
+                long soHopDong = kh.getDanhSachHopDong() != null ? kh.getDanhSachHopDong().size() : 0;
+                
+                Map<String, Object> item = new HashMap<>();
+                item.put("maKH", kh.getMaKH());
+                item.put("hoTen", kh.getHoTen());
+                item.put("tongGiaTri", tongGiaTri);
+                item.put("soHopDong", soHopDong);
+                item.put("soDienThoai", kh.getSoDienThoai());
+                return item;
+            })
+            .filter(item -> ((BigDecimal)item.get("tongGiaTri")).compareTo(BigDecimal.ZERO) > 0)
+            .sorted((a, b) -> ((BigDecimal)b.get("tongGiaTri")).compareTo((BigDecimal)a.get("tongGiaTri")))
+            .limit(10)
+            .collect(Collectors.toList());
+
+        result.put("tongKhachHang", tongKhachHang);
+        result.put("theoGioiTinh", theoGioiTinh);
+        result.put("theoNgheNghiep", theoNgheNghiep);
+        result.put("theoDoTuoi", theoDoTuoi);
+        result.put("topKhachHangNhieuXe", topKhachHangNhieuXe);
+        result.put("topKhachHangGiaTriCao", topKhachHangGiaTriCao);
+        result.put("fromDate", fromDate);
+        result.put("toDate", toDate);
+
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
 
     @GetMapping("/tham-dinh")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getThamDinh(

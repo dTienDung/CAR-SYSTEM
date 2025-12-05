@@ -34,6 +34,8 @@ async function loadBaoCao(type) {
             thongKeDiv.innerHTML = `<p><strong>Số hợp đồng tái tục:</strong> ${data.soHopDongTaiTuc || 0}</p>`;
         } else if (type === 'tham-dinh' && data.countByStatus) {
             renderThamDinhReport(data, thongKeDiv, chiTietDiv, chartCanvas);
+        } else if (type === 'khach-hang') {
+            renderKhachHangReport(data, thongKeDiv, chiTietDiv, chartCanvas);
         }
     } catch(err) {
         thongKeDiv.innerHTML = `<p style="color:red">Lỗi: ${err.message}</p>`;
@@ -371,6 +373,145 @@ function renderThamDinhReport(data, thongKeDiv, chiTietDiv, chartCanvas) {
             }
         }
     });
+}
+
+function renderKhachHangReport(data, thongKeDiv, chiTietDiv, chartCanvas) {
+    // KPI Card
+    const kpiHTML = `
+        <div style="background:#fff;padding:32px;border-radius:16px;margin-bottom:24px;box-shadow:0 8px 24px rgba(0,0,0,0.15);">
+            <h2 style="color:#667eea;margin-bottom:24px;font-size:24px;border-bottom:3px solid #667eea;padding-bottom:12px;">
+                👥 Báo cáo Khách hàng
+            </h2>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;">
+                <div style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
+                    <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">Tổng khách hàng</div>
+                    <div style="font-size:32px;font-weight:bold;">${data.tongKhachHang || 0}</div>
+                </div>
+            </div>
+        </div>
+    `;
+    thongKeDiv.innerHTML = kpiHTML;
+
+    // Biểu đồ phân loại
+    if (data.theoGioiTinh && Object.keys(data.theoGioiTinh).length > 0) {
+        chartCanvas.style.display = 'block';
+        const ctx = chartCanvas.getContext('2d');
+        
+        baoCaoChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Giới tính', 'Độ tuổi'],
+                datasets: [{
+                    label: 'Phân loại khách hàng',
+                    data: [Object.keys(data.theoGioiTinh).length, Object.keys(data.theoDoTuoi).length],
+                    backgroundColor: ['rgba(102, 126, 234, 0.8)', 'rgba(76, 175, 80, 0.8)']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Phân loại khách hàng', font: { size: 18, weight: 'bold' } }
+                }
+            }
+        });
+    }
+
+    // Bảng phân loại
+    let phanLoaiHTML = '<div style="background:#fff;padding:32px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,0.15);margin-top:24px;">';
+    phanLoaiHTML += '<h3 style="color:#667eea;margin-bottom:20px;">📊 Phân loại khách hàng</h3>';
+    phanLoaiHTML += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;">';
+    
+    // Theo giới tính
+    if (data.theoGioiTinh) {
+        phanLoaiHTML += '<div><h4 style="color:#333;margin-bottom:12px;">👫 Theo giới tính</h4><ul style="list-style:none;padding:0;">';
+        Object.entries(data.theoGioiTinh).forEach(([key, val]) => {
+            phanLoaiHTML += `<li style="padding:8px;background:#f5f5f5;margin-bottom:8px;border-radius:8px;"><strong>${key}:</strong> ${val} người</li>`;
+        });
+        phanLoaiHTML += '</ul></div>';
+    }
+    
+    // Theo độ tuổi
+    if (data.theoDoTuoi) {
+        phanLoaiHTML += '<div><h4 style="color:#333;margin-bottom:12px;">🎂 Theo độ tuổi</h4><ul style="list-style:none;padding:0;">';
+        Object.entries(data.theoDoTuoi).forEach(([key, val]) => {
+            phanLoaiHTML += `<li style="padding:8px;background:#f5f5f5;margin-bottom:8px;border-radius:8px;"><strong>${key}:</strong> ${val} người</li>`;
+        });
+        phanLoaiHTML += '</ul></div>';
+    }
+    
+    // Theo nghề nghiệp
+    if (data.theoNgheNghiep) {
+        phanLoaiHTML += '<div><h4 style="color:#333;margin-bottom:12px;">💼 Theo nghề nghiệp</h4><ul style="list-style:none;padding:0;">';
+        Object.entries(data.theoNgheNghiep).slice(0, 5).forEach(([key, val]) => {
+            phanLoaiHTML += `<li style="padding:8px;background:#f5f5f5;margin-bottom:8px;border-radius:8px;"><strong>${key}:</strong> ${val} người</li>`;
+        });
+        phanLoaiHTML += '</ul></div>';
+    }
+    
+    phanLoaiHTML += '</div></div>';
+    chiTietDiv.innerHTML = phanLoaiHTML;
+
+    // Top khách hàng nhiều xe
+    if (data.topKhachHangNhieuXe && data.topKhachHangNhieuXe.length > 0) {
+        const topXeRows = data.topKhachHangNhieuXe.map(kh => `
+            <tr>
+                <td>${kh.maKH}</td>
+                <td><strong>${kh.hoTen}</strong></td>
+                <td style="text-align:center;font-size:20px;font-weight:bold;color:#667eea;">${kh.soXe}</td>
+                <td>${kh.soDienThoai}</td>
+                <td>${kh.email || '<em style="color:#999;">N/A</em>'}</td>
+            </tr>
+        `).join('');
+        
+        chiTietDiv.innerHTML += `
+            <div style="background:#fff;padding:32px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,0.15);margin-top:24px;">
+                <h3 style="color:#667eea;margin-bottom:20px;">🚗 Top khách hàng có nhiều xe</h3>
+                <table class="styled-table">
+                    <thead>
+                        <tr>
+                            <th>Mã KH</th>
+                            <th>Họ tên</th>
+                            <th>Số xe</th>
+                            <th>SĐT</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>${topXeRows}</tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    // Top khách hàng giá trị cao
+    if (data.topKhachHangGiaTriCao && data.topKhachHangGiaTriCao.length > 0) {
+        const topGiaTriRows = data.topKhachHangGiaTriCao.map(kh => `
+            <tr>
+                <td>${kh.maKH}</td>
+                <td><strong>${kh.hoTen}</strong></td>
+                <td style="text-align:center;">${kh.soHopDong || 0}</td>
+                <td style="font-weight:bold;color:#4caf50;text-align:right;">${(kh.tongGiaTri || 0).toLocaleString()} VNĐ</td>
+                <td>${kh.soDienThoai}</td>
+            </tr>
+        `).join('');
+        
+        chiTietDiv.innerHTML += `
+            <div style="background:#fff;padding:32px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,0.15);margin-top:24px;">
+                <h3 style="color:#667eea;margin-bottom:20px;">💎 Top khách hàng giá trị cao</h3>
+                <table class="styled-table">
+                    <thead>
+                        <tr>
+                            <th>Mã KH</th>
+                            <th>Họ tên</th>
+                            <th>Số HĐ</th>
+                            <th>Tổng giá trị</th>
+                            <th>SĐT</th>
+                        </tr>
+                    </thead>
+                    <tbody>${topGiaTriRows}</tbody>
+                </table>
+            </div>
+        `;
+    }
 }
 
 function getPhuongThucBadge(phuongThuc) {
