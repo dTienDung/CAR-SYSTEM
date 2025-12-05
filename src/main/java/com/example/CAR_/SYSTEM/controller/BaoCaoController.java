@@ -45,22 +45,128 @@ public class BaoCaoController {
     @GetMapping("/doanh-thu")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getDoanhThu(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate)
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam(required = false, defaultValue = "day") String groupBy)
     {
-
         Map<String, Object> result = new HashMap<>();
+
+        // Nếu không có fromDate, mặc định 30 ngày trước
+        if (fromDate == null) {
+            fromDate = LocalDate.now().minusDays(30);
+        }
+        // Nếu không có toDate, mặc định hôm nay
+        if (toDate == null) {
+            toDate = LocalDate.now();
+        }
 
         List<ThanhToan> thanhToans = thanhToanServiceImpl.getAll();
 
-        BigDecimal tongDoanhThu = thanhToans.stream()
-                .filter(tt -> (fromDate == null || !tt.getCreatedAt().toLocalDate().isBefore(fromDate)) &&
-                        (toDate == null || !tt.getCreatedAt().toLocalDate().isAfter(toDate)))
+        // Lọc theo thời gian
+        LocalDate finalFromDate = fromDate;
+        LocalDate finalToDate = toDate;
+        List<ThanhToan> filteredList = thanhToans.stream()
+                .filter(tt -> !tt.getCreatedAt().toLocalDate().isBefore(finalFromDate) &&
+                        !tt.getCreatedAt().toLocalDate().isAfter(finalToDate))
+                .collect(Collectors.toList());
+
+        // Tổng doanh thu
+        BigDecimal tongDoanhThu = filteredList.stream()
                 .map(ThanhToan::getSoTien)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        // Số giao dịch
+        long soGiaoDich = filteredList.size();
+
+        // Doanh thu trung bình
+        BigDecimal doanhThuTrungBinh = soGiaoDich > 0 ? 
+            tongDoanhThu.divide(BigDecimal.valueOf(soGiaoDich), 2, java.math.RoundingMode.HALF_UP) : 
+            BigDecimal.ZERO;
+
+        // Timeline data (theo ngày/tuần/tháng)
+        Map<String, BigDecimal> timeline = new java.util.LinkedHashMap<>();
+        java.time.format.DateTimeFormatter formatter;
+        
+        if ("month".equals(groupBy)) {
+            formatter = java.time.format.DateTimeFormatter.ofPattern("MM/yyyy");
+        } else if ("week".equals(groupBy)) {
+            formatter = java.time.format.DateTimeFormatter.ofPattern("'W'w/yyyy");
+        } else {
+            formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM");
+        }
+
+        for (ThanhToan tt : filteredList) {
+            String key = tt.getCreatedAt().toLocalDate().format(formatter);
+            timeline.merge(key, tt.getSoTien(), BigDecimal::add);
+        }
+
+        // Doanh thu theo phương thức thanh toán
+        Map<String, BigDecimal> theoPhuongThucThanhToan = filteredList.stream()
+                .collect(Collectors.groupingBy(
+                    tt -> tt.getPhuongThuc() != null ? tt.getPhuongThuc().name() : "KHAC",
+                    Collectors.reducing(BigDecimal.ZERO, ThanhToan::getSoTien, BigDecimal::add)
+                ));
+
+        // Doanh thu theo loại (thu/hoàn phí)
+        Map<String, BigDecimal> theoLoai = filteredList.stream()
+                .collect(Collectors.groupingBy(
+                    tt -> tt.getIsHoanPhi() ? "HOAN_PHI" : "THU_PHI",
+                    Collectors.reducing(BigDecimal.ZERO, ThanhToan::getSoTien, BigDecimal::add)
+                ));
+
+        // KPI: Hôm nay, tuần này, tháng này
+        LocalDate today = LocalDate.now();
+        LocalDate startOfWeek = today.with(java.time.DayOfWeek.MONDAY);
+        LocalDate startOfMonth = today.withDayOfMonth(1);
+
+        BigDecimal doanhThuHomNay = thanhToans.stream()
+                .filter(tt -> tt.getCreatedAt().toLocalDate().equals(today))
+                .map(ThanhToan::getSoTien)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal doanhThuTuanNay = thanhToans.stream()
+                .filter(tt -> !tt.getCreatedAt().toLocalDate().isBefore(startOfWeek))
+                .map(ThanhToan::getSoTien)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal doanhThuThangNay = thanhToans.stream()
+                .filter(tt -> !tt.getCreatedAt().toLocalDate().isBefore(startOfMonth))
+                .map(ThanhToan::getSoTien)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Chi tiết giao dịch
+        List<Map<String, Object>> chiTiet = filteredList.stream()
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .limit(100) // Giới hạn 100 giao dịch gần nhất
+                .map(tt -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("id", tt.getId());
+                    item.put("maTT", tt.getMaTT());
+                    item.put("soTien", tt.getSoTien());
+                    item.put("phuongThuc", tt.getPhuongThuc() != null ? tt.getPhuongThuc().name() : "");
+                    item.put("isHoanPhi", tt.getIsHoanPhi());
+                    item.put("ngayThanhToan", tt.getCreatedAt().toLocalDate());
+                    item.put("hopDong", tt.getHopDong() != null ? tt.getHopDong().getMaHD() : "");
+                    item.put("khachHang", tt.getHopDong() != null && tt.getHopDong().getHoSoThamDinh() != null && 
+                            tt.getHopDong().getHoSoThamDinh().getKhachHang() != null ? 
+                            tt.getHopDong().getHoSoThamDinh().getKhachHang().getHoTen() : "");
+                    item.put("ghiChu", tt.getGhiChu());
+                    return item;
+                })
+                .collect(Collectors.toList());
+
         result.put("tongDoanhThu", tongDoanhThu);
+        result.put("soGiaoDich", soGiaoDich);
+        result.put("doanhThuTrungBinh", doanhThuTrungBinh);
+        result.put("doanhThuHomNay", doanhThuHomNay);
+        result.put("doanhThuTuanNay", doanhThuTuanNay);
+        result.put("doanhThuThangNay", doanhThuThangNay);
+        result.put("timeline", timeline);
+        result.put("theoPhuongThucThanhToan", theoPhuongThucThanhToan);
+        result.put("theoLoai", theoLoai);
+        result.put("chiTiet", chiTiet);
         result.put("fromDate", fromDate);
         result.put("toDate", toDate);
+        result.put("groupBy", groupBy);
 
         return ResponseEntity.ok(ApiResponse.success(result));
     }
