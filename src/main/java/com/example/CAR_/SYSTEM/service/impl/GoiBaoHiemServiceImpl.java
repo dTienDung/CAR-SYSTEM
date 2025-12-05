@@ -16,6 +16,8 @@ import java.util.List;
 public class GoiBaoHiemServiceImpl implements GoiBaoHiemService {
     
     private final GoiBaoHiemRepository goiBaoHiemRepository;
+    private final com.example.CAR_.SYSTEM.repository.HoSoThamDinhRepository hoSoThamDinhRepository;
+    private final com.example.CAR_.SYSTEM.repository.HopDongRepository hopDongRepository;
     
     @Override
     public List<GoiBaoHiem> getAll() {
@@ -66,7 +68,19 @@ public class GoiBaoHiemServiceImpl implements GoiBaoHiemService {
     @Transactional
     public void delete(Long id) {
         GoiBaoHiem goiBaoHiem = getById(id);
+        
+        // Validate: Kiểm tra xem gói bảo hiểm có hồ sơ thẩm định không
+        long soHoSo = hoSoThamDinhRepository.countByGoiBaoHiemId(id);
+        if (soHoSo > 0) {
+            throw new RuntimeException("Không thể xóa gói bảo hiểm vì đang có " + soHoSo + " hồ sơ thẩm định!");
+        }
+        
+        // Validate: Kiểm tra xem gói bảo hiểm có hợp đồng không
+        long soHopDong = hopDongRepository.countByGoiBaoHiemId(id);
+        if (soHopDong > 0) {
+            throw new RuntimeException("Không thể xóa gói bảo hiểm vì đang có " + soHopDong + " hợp đồng!");
+        }
+        
         goiBaoHiemRepository.delete(goiBaoHiem);
     }
 }
-

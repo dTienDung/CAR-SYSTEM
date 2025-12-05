@@ -72,4 +72,8 @@ public interface HoSoThamDinhRepository extends JpaRepository<HoSoThamDinh, Long
            "WHERE h.riskLevel = com.example.CAR_.SYSTEM.model.enums.RiskLevel.TU_CHOI " +
            "ORDER BY h.riskScore DESC")
     List<HoSoThamDinh> findTopRiskVehicles();
+    
+    // Validation queries
+    long countByXeId(Long xeId);
+    long countByGoiBaoHiemId(Long goiBaoHiemId);
 }

@@ -18,6 +18,8 @@ public class XeServiceImpl implements XeService {
     
     private final XeRepository xeRepository;
     private final KhachHangRepository khachHangRepository;
+    private final com.example.CAR_.SYSTEM.repository.HoSoThamDinhRepository hoSoThamDinhRepository;
+    private final com.example.CAR_.SYSTEM.repository.HopDongRepository hopDongRepository;
     
     @Override
     public List<Xe> getAll() {
@@ -107,7 +109,19 @@ public class XeServiceImpl implements XeService {
     @Transactional
     public void delete(Long id) {
         Xe xe = getById(id);
+        
+        // Validate: Kiểm tra xem xe có hồ sơ thẩm định không
+        long soHoSo = hoSoThamDinhRepository.countByXeId(id);
+        if (soHoSo > 0) {
+            throw new RuntimeException("Không thể xóa xe vì đang có " + soHoSo + " hồ sơ thẩm định!");
+        }
+        
+        // Validate: Kiểm tra xem xe có hợp đồng không
+        long soHopDong = hopDongRepository.countByXeId(id);
+        if (soHopDong > 0) {
+            throw new RuntimeException("Không thể xóa xe vì đang có " + soHopDong + " hợp đồng!");
+        }
+        
         xeRepository.delete(xe);
     }
 }
-

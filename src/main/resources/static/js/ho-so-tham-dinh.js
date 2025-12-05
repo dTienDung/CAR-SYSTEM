@@ -103,25 +103,6 @@ async function loadXeByKhachHang() {
     }
 }
 
-async function loadTieuChi() {
-    const goiBaoHiemId = document.getElementById('goiBaoHiemId').value;
-    if (!goiBaoHiemId) {
-        document.getElementById('tieuChiSection').style.display = 'none';
-        return;
-    }
-    
-    try {
-        const response = await apiGet('/tieu-chi-tham-dinh/active');
-        if (response.success && response.data) {
-            tieuChiList = response.data;
-            displayTieuChiForm();
-            document.getElementById('tieuChiSection').style.display = 'block';
-        }
-    } catch (error) {
-        console.error('Error loading tieu chi:', error);
-    }
-}
-
 async function loadMaTranTinhPhi() {
     try {
         const response = await apiGet('/ma-tran-tinh-phi');
@@ -133,96 +114,7 @@ async function loadMaTranTinhPhi() {
     }
 }
 
-function displayTieuChiForm() {
-    const container = document.getElementById('tieuChiList');
-    container.innerHTML = tieuChiList.map((tc, index) => `
-        <div class="form-group" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 5px;">
-            <label><strong>${tc.tenTieuChi}</strong> (Điểm tối đa: ${tc.diemToiDa})</label>
-            ${tc.moTa ? `<small style="display: block; color: #666; margin-bottom: 5px;">${tc.moTa}</small>` : ''}
-            ${tc.dieuKien ? `<small style="display: block; color: #666; margin-bottom: 5px;">Điều kiện: ${tc.dieuKien}</small>` : ''}
-            <input type="number" 
-                   id="tieuChi_${tc.id}" 
-                   class="tieuChiInput" 
-                   min="0" 
-                   max="${tc.diemToiDa}" 
-                   value="0" 
-                   onchange="calculateTotalScore()"
-                   data-tieu-chi-id="${tc.id}"
-                   style="width: 100px;">
-            <input type="text" 
-                   id="ghiChu_${tc.id}" 
-                   placeholder="Ghi chú (tùy chọn)" 
-                   style="width: calc(100% - 120px); margin-left: 10px;">
-        </div>
-    `).join('');
-    
-    calculateTotalScore();
-}
-
-// Load lại khi chọn gói bảo hiểm
-document.getElementById('goiBaoHiemId').addEventListener('change', function() {
-    loadTieuChi();
-});
-
-function calculateTotalScore() {
-    let totalScore = 0;
-    const inputs = document.querySelectorAll('.tieuChiInput');
-    
-    inputs.forEach(input => {
-        const diem = parseInt(input.value) || 0;
-        totalScore += diem;
-    });
-    
-    document.getElementById('totalScore').textContent = totalScore;
-    
-    // Xác định RiskLevel theo business rules
-    let riskLevel = '';
-    let riskLevelText = '';
-    if (totalScore < 15) {
-        riskLevel = 'CHAP_NHAN';
-        riskLevelText = 'CHẤP NHẬN';
-    } else if (totalScore < 25) {
-        riskLevel = 'XEM_XET';
-        riskLevelText = 'XEM XÉT';
-    } else {
-        riskLevel = 'TU_CHOI';
-        riskLevelText = 'TỪ CHỐI';
-    }
-    
-    document.getElementById('riskLevel').textContent = riskLevelText;
-    document.getElementById('riskLevel').style.color = 
-        riskLevel === 'CHAP_NHAN' ? 'green' : 
-        riskLevel === 'XEM_XET' ? 'orange' : 'red';
-    
-    // Tính phí bảo hiểm
-    calculatePhiBaoHiem(totalScore);
-}
-
-function calculatePhiBaoHiem(riskScore) {
-    const goiBaoHiemId = document.getElementById('goiBaoHiemId').value;
-    if (!goiBaoHiemId) {
-        document.getElementById('phiBaoHiem').textContent = '-';
-        return;
-    }
-    
-    const goiBaoHiem = goiBaoHiemList.find(g => g.id == goiBaoHiemId);
-    if (!goiBaoHiem || !goiBaoHiem.phiCoBan) {
-        document.getElementById('phiBaoHiem').textContent = '-';
-        return;
-    }
-    
-    // Tìm ma trận tính phí phù hợp
-    const maTran = maTranTinhPhiList.find(mt => 
-        riskScore >= mt.diemRuiRoTu && riskScore <= mt.diemRuiRoDen
-    );
-    
-    if (maTran && maTran.heSoPhi) {
-        const phiBaoHiem = goiBaoHiem.phiCoBan * parseFloat(maTran.heSoPhi);
-        document.getElementById('phiBaoHiem').textContent = formatCurrency(phiBaoHiem);
-    } else {
-        document.getElementById('phiBaoHiem').textContent = formatCurrency(goiBaoHiem.phiCoBan) + ' (chưa có hệ số)';
-    }
-}
+// Bỏ tất cả function liên quan đến nhập điểm thủ công
 
 async function loadHoSo() {
     try {
@@ -290,7 +182,7 @@ function openModal(mode, id = null) {
         title.textContent = 'Tạo hồ sơ thẩm định';
         form.reset();
         document.getElementById('hoSoId').value = '';
-        document.getElementById('tieuChiSection').style.display = 'none';
+        // Không cần tieuChiSection nữa - đã bỏ
         loadData();
     }
     
@@ -303,30 +195,13 @@ function closeModal() {
 }
 
 async function saveHoSo() {
-    // Thu thập điểm từng tiêu chí
-    const chiTietThamDinh = [];
-    const inputs = document.querySelectorAll('.tieuChiInput');
-    
-    inputs.forEach(input => {
-        const tieuChiId = parseInt(input.dataset.tieuChiId);
-        const diem = parseInt(input.value) || 0;
-        const ghiChu = document.getElementById(`ghiChu_${tieuChiId}`).value;
-        
-        if (diem > 0 || ghiChu) {
-            chiTietThamDinh.push({
-                tieuChiId: tieuChiId,
-                diem: diem,
-                ghiChu: ghiChu
-            });
-        }
-    });
-    
+    // Không cần thu thập điểm - hệ thống tự động tính
     const formData = {
         khachHangId: parseInt(document.getElementById('khachHangId').value),
         xeId: parseInt(document.getElementById('xeId').value),
         goiBaoHiemId: parseInt(document.getElementById('goiBaoHiemId').value),
-        ghiChu: document.getElementById('ghiChu').value,
-        chiTietThamDinh: chiTietThamDinh
+        ghiChu: document.getElementById('ghiChu').value
+        // Không gửi chiTietThamDinh - backend sẽ tự động tính
     };
     
     try {
@@ -334,7 +209,7 @@ async function saveHoSo() {
         if (response.success) {
             closeModal();
             loadHoSo();
-            alert('Tạo hồ sơ thẩm định thành công!');
+            alert('✅ Tạo hồ sơ thẩm định thành công!\n🤖 Hệ thống đã tự động tính điểm thẩm định.');
         }
     } catch (error) {
         showError('errorMessage', error.message || 'Lỗi khi tạo hồ sơ');

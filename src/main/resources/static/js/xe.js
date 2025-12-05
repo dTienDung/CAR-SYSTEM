@@ -75,14 +75,21 @@ function openModal(mode, id = null) {
     const modal = document.getElementById('modal');
     const form = document.getElementById('xeForm');
     const title = document.getElementById('modalTitle');
+    const khachHangSelect = document.getElementById('khachHangId');
     
     if (mode === 'create') {
         title.textContent = 'Thêm xe';
         form.reset();
         document.getElementById('xeId').value = '';
+        // Enable chủ xe khi tạo mới
+        khachHangSelect.disabled = false;
+        khachHangSelect.style.backgroundColor = '';
     } else {
         title.textContent = 'Sửa xe';
         loadXeDetail(id);
+        // Disable chủ xe khi sửa (read-only)
+        khachHangSelect.disabled = true;
+        khachHangSelect.style.backgroundColor = '#f5f5f5';
     }
     
     modal.classList.add('active');
@@ -171,4 +178,3 @@ async function deleteXe(id) {
         alert('Lỗi khi xóa: ' + (error.message || 'Có lỗi xảy ra'));
     }
 }
-

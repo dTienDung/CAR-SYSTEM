@@ -333,16 +333,249 @@ public class HoSoThamDinhServiceImpl implements HoSoThamDinhService {
         }
     }
 
+    /**
+     * Tính điểm tự động cho từng tiêu chí dựa trên dữ liệu thực tế
+     * Hỗ trợ nhiều tiêu chí: tuổi xe, lịch sử tai nạn, tuổi lái xe, v.v.
+     */
     private int calculateDiemForTieuChi(TieuChiThamDinh tieuChi, HoSoThamDinh hoSo) {
-        // Logic tính điểm đơn giản - có thể mở rộng
-        // Ví dụ: kiểm tra lịch sử tai nạn
-        if (tieuChi.getMaTieuChi().contains("TAI_NAN")) {
-            long soLanTaiNan = lichSuTaiNanRepository.findByXeId(hoSo.getXe().getId()).size();
-            return (int) Math.min(soLanTaiNan * 5, tieuChi.getDiemToiDa());
+        String maTieuChi = tieuChi.getMaTieuChi().toUpperCase();
+        int diemToiDa = tieuChi.getDiemToiDa();
+        
+        try {
+            // 1. LỊCH SỬ TAI NẠN
+            if (maTieuChi.contains("TAI_NAN") || maTieuChi.contains("ACCIDENT")) {
+                return calculateDiemTaiNan(hoSo, diemToiDa);
+            }
+            
+            // 2. TUỔI XE (Nam sản xuất)
+            if (maTieuChi.contains("TUOI_XE") || maTieuChi.contains("NAM_SAN_XUAT") || 
+                maTieuChi.contains("AGE_VEHICLE")) {
+                return calculateDiemTuoiXe(hoSo, diemToiDa);
+            }
+            
+            // 3. TUỔI LÁI XE (Tuổi khách hàng)
+            if (maTieuChi.contains("TUOI_LAI") || maTieuChi.contains("TUOI_KH") || 
+                maTieuChi.contains("AGE_DRIVER")) {
+                return calculateDiemTuoiLaiXe(hoSo, diemToiDa);
+            }
+            
+            // 4. GIÁ TRỊ XE
+            if (maTieuChi.contains("GIA_TRI") || maTieuChi.contains("VALUE")) {
+                return calculateDiemGiaTriXe(hoSo, diemToiDa);
+            }
+            
+            // 5. MỤC ĐÍCH SỬ DỤNG
+            if (maTieuChi.contains("MUC_DICH") || maTieuChi.contains("PURPOSE")) {
+                return calculateDiemMucDichSuDung(hoSo, diemToiDa);
+            }
+            
+            // 6. NGHỀ NGHIỆP
+            if (maTieuChi.contains("NGHE_NGHIEP") || maTieuChi.contains("OCCUPATION")) {
+                return calculateDiemNgheNghiep(hoSo, diemToiDa);
+            }
+            
+            // 7. GIỚI TÍNH
+            if (maTieuChi.contains("GIOI_TINH") || maTieuChi.contains("GENDER")) {
+                return calculateDiemGioiTinh(hoSo, diemToiDa);
+            }
+            
+            // 8. LOẠI XE (Hãng xe)
+            if (maTieuChi.contains("LOAI_XE") || maTieuChi.contains("HANG_XE") || 
+                maTieuChi.contains("BRAND")) {
+                return calculateDiemLoaiXe(hoSo, diemToiDa);
+            }
+            
+        } catch (Exception e) {
+            // Nếu có lỗi, trả về 0
+            System.err.println("Lỗi tính điểm tiêu chí " + maTieuChi + ": " + e.getMessage());
         }
-
-        // Mặc định trả về 0 điểm
+        
+        // Mặc định trả về 0 điểm (chưa có logic tự động)
         return 0;
+    }
+    
+    // ========== CÁC HÀM TÍNH ĐIỂM CHO TỪNG TIÊU CHÍ ==========
+    
+    /**
+     * 1. Tính điểm lịch sử tai nạn
+     * Càng nhiều tai nạn → điểm càng cao
+     */
+    private int calculateDiemTaiNan(HoSoThamDinh hoSo, int diemToiDa) {
+        long soLanTaiNan = lichSuTaiNanRepository.findByXeId(hoSo.getXe().getId()).size();
+        
+        // 0 tai nạn = 0 điểm
+        // 1 tai nạn = 30% điểm tối đa
+        // 2 tai nạn = 60% điểm tối đa
+        // 3+ tai nạn = 100% điểm tối đa
+        if (soLanTaiNan == 0) return 0;
+        if (soLanTaiNan == 1) return (int) (diemToiDa * 0.3);
+        if (soLanTaiNan == 2) return (int) (diemToiDa * 0.6);
+        return diemToiDa; // 3+ tai nạn
+    }
+    
+    /**
+     * 2. Tính điểm tuổi xe
+     * Xe càng cũ → rủi ro càng cao
+     */
+    private int calculateDiemTuoiXe(HoSoThamDinh hoSo, int diemToiDa) {
+        int namSanXuat = hoSo.getXe().getNamSanXuat();
+        int namHienTai = LocalDate.now().getYear();
+        int tuoiXe = namHienTai - namSanXuat;
+        
+        // 0-3 năm = 0 điểm (xe mới)
+        // 4-7 năm = 20% điểm
+        // 8-12 năm = 50% điểm
+        // 13-20 năm = 80% điểm
+        // >20 năm = 100% điểm (xe quá cũ)
+        if (tuoiXe <= 3) return 0;
+        if (tuoiXe <= 7) return (int) (diemToiDa * 0.2);
+        if (tuoiXe <= 12) return (int) (diemToiDa * 0.5);
+        if (tuoiXe <= 20) return (int) (diemToiDa * 0.8);
+        return diemToiDa;
+    }
+    
+    /**
+     * 3. Tính điểm tuổi lái xe (tuổi khách hàng)
+     * Quá trẻ hoặc quá già → rủi ro cao
+     */
+    private int calculateDiemTuoiLaiXe(HoSoThamDinh hoSo, int diemToiDa) {
+        if (hoSo.getKhachHang().getNgaySinh() == null) return 0;
+        
+        int namSinh = hoSo.getKhachHang().getNgaySinh().getYear();
+        int namHienTai = LocalDate.now().getYear();
+        int tuoi = namHienTai - namSinh;
+        
+        // 18-25 tuổi = 60% điểm (thiếu kinh nghiệm)
+        // 26-50 tuổi = 0 điểm (độ tuổi an toàn)
+        // 51-65 tuổi = 30% điểm
+        // >65 tuổi = 70% điểm (phản xạ kém)
+        if (tuoi < 18) return diemToiDa; // Chưa đủ tuổi lái xe
+        if (tuoi <= 25) return (int) (diemToiDa * 0.6);
+        if (tuoi <= 50) return 0;
+        if (tuoi <= 65) return (int) (diemToiDa * 0.3);
+        return (int) (diemToiDa * 0.7);
+    }
+    
+    /**
+     * 4. Tính điểm giá trị xe
+     * Xe càng đắt → rủi ro bồi thường càng cao
+     */
+    private int calculateDiemGiaTriXe(HoSoThamDinh hoSo, int diemToiDa) {
+        BigDecimal giaTriXe = hoSo.getXe().getGiaTriXe();
+        if (giaTriXe == null) return 0;
+        
+        long giaTri = giaTriXe.longValue();
+        
+        // <300 triệu = 0 điểm
+        // 300-500 triệu = 20% điểm
+        // 500-800 triệu = 40% điểm
+        // 800-1.5 tỷ = 60% điểm
+        // >1.5 tỷ = 100% điểm
+        if (giaTri < 300_000_000) return 0;
+        if (giaTri < 500_000_000) return (int) (diemToiDa * 0.2);
+        if (giaTri < 800_000_000) return (int) (diemToiDa * 0.4);
+        if (giaTri < 1_500_000_000) return (int) (diemToiDa * 0.6);
+        return diemToiDa;
+    }
+    
+    /**
+     * 5. Tính điểm mục đích sử dụng
+     * Kinh doanh/taxi → rủi ro cao hơn cá nhân
+     */
+    private int calculateDiemMucDichSuDung(HoSoThamDinh hoSo, int diemToiDa) {
+        String mucDich = hoSo.getXe().getMucDichSuDung();
+        if (mucDich == null) return 0;
+        
+        mucDich = mucDich.toLowerCase();
+        
+        // Cá nhân = 0 điểm
+        // Kinh doanh/Taxi/Uber = 80% điểm
+        // Vận tải = 100% điểm
+        if (mucDich.contains("cá nhân") || mucDich.contains("ca nhan")) return 0;
+        if (mucDich.contains("taxi") || mucDich.contains("uber") || 
+            mucDich.contains("grab") || mucDich.contains("kinh doanh")) {
+            return (int) (diemToiDa * 0.8);
+        }
+        if (mucDich.contains("vận tải") || mucDich.contains("van tai")) {
+            return diemToiDa;
+        }
+        
+        return (int) (diemToiDa * 0.3); // Mặc định
+    }
+    
+    /**
+     * 6. Tính điểm nghề nghiệp
+     * Nghề nguy hiểm → rủi ro cao
+     */
+    private int calculateDiemNgheNghiep(HoSoThamDinh hoSo, int diemToiDa) {
+        String ngheNghiep = hoSo.getKhachHang().getNgheNghiep();
+        if (ngheNghiep == null) return 0;
+        
+        ngheNghiep = ngheNghiep.toLowerCase();
+        
+        // Văn phòng/Giáo viên = 0 điểm
+        // Tài xế/Shipper = 70% điểm
+        // Công nhân/Xây dựng = 50% điểm
+        if (ngheNghiep.contains("văn phòng") || ngheNghiep.contains("giáo viên") ||
+            ngheNghiep.contains("nhân viên") || ngheNghiep.contains("kế toán")) {
+            return 0;
+        }
+        if (ngheNghiep.contains("tài xế") || ngheNghiep.contains("lái xe") ||
+            ngheNghiep.contains("shipper") || ngheNghiep.contains("giao hàng")) {
+            return (int) (diemToiDa * 0.7);
+        }
+        if (ngheNghiep.contains("công nhân") || ngheNghiep.contains("xây dựng")) {
+            return (int) (diemToiDa * 0.5);
+        }
+        
+        return (int) (diemToiDa * 0.2); // Mặc định
+    }
+    
+    /**
+     * 7. Tính điểm giới tính
+     * Thống kê: Nam có tỷ lệ tai nạn cao hơn Nữ
+     */
+    private int calculateDiemGioiTinh(HoSoThamDinh hoSo, int diemToiDa) {
+        String gioiTinh = hoSo.getKhachHang().getGioiTinh();
+        if (gioiTinh == null) return 0;
+        
+        // Nam = 40% điểm
+        // Nữ = 0 điểm
+        if (gioiTinh.equalsIgnoreCase("Nam")) {
+            return (int) (diemToiDa * 0.4);
+        }
+        return 0;
+    }
+    
+    /**
+     * 8. Tính điểm loại xe (hãng xe)
+     * Xe sang → chi phí sửa chữa cao → rủi ro cao
+     */
+    private int calculateDiemLoaiXe(HoSoThamDinh hoSo, int diemToiDa) {
+        String hangXe = hoSo.getXe().getHangXe();
+        if (hangXe == null) return 0;
+        
+        hangXe = hangXe.toLowerCase();
+        
+        // Xe sang (Mercedes, BMW, Audi, Lexus) = 70% điểm
+        // Xe phổ thông (Toyota, Honda, Mazda) = 0 điểm
+        // Xe Trung Quốc = 40% điểm
+        if (hangXe.contains("mercedes") || hangXe.contains("bmw") || 
+            hangXe.contains("audi") || hangXe.contains("lexus") ||
+            hangXe.contains("porsche") || hangXe.contains("bentley")) {
+            return (int) (diemToiDa * 0.7);
+        }
+        if (hangXe.contains("toyota") || hangXe.contains("honda") || 
+            hangXe.contains("mazda") || hangXe.contains("hyundai") ||
+            hangXe.contains("kia") || hangXe.contains("ford")) {
+            return 0;
+        }
+        if (hangXe.contains("vinfast") || hangXe.contains("byd") ||
+            hangXe.contains("mg") || hangXe.contains("haval")) {
+            return (int) (diemToiDa * 0.4);
+        }
+        
+        return (int) (diemToiDa * 0.2); // Mặc định
     }
 
     private String getRiskLevelDescription(RiskLevel riskLevel) {

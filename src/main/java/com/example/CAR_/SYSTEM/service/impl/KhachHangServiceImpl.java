@@ -98,7 +98,19 @@ public class KhachHangServiceImpl implements KhachHangService {
     @Transactional
     public void delete(Long id) {
         KhachHang khachHang = getById(id);
+        
+        // Validate: Kiểm tra xem khách hàng có xe không
+        if (khachHang.getDanhSachXe() != null && !khachHang.getDanhSachXe().isEmpty()) {
+            throw new RuntimeException("Không thể xóa khách hàng vì đang có " + 
+                khachHang.getDanhSachXe().size() + " xe. Vui lòng xóa xe trước!");
+        }
+        
+        // Validate: Kiểm tra xem khách hàng có hợp đồng không
+        if (khachHang.getDanhSachHopDong() != null && !khachHang.getDanhSachHopDong().isEmpty()) {
+            throw new RuntimeException("Không thể xóa khách hàng vì đang có " + 
+                khachHang.getDanhSachHopDong().size() + " hợp đồng!");
+        }
+        
         khachHangRepository.delete(khachHang);
     }
 }
-

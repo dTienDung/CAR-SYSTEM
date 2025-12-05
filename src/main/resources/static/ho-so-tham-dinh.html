@@ -81,23 +81,16 @@
                 </div>
                 <div class="form-group">
                     <label for="goiBaoHiemId">Gói bảo hiểm *</label>
-                    <select id="goiBaoHiemId" required onchange="loadTieuChi()"></select>
-                </div>
-                
-                <!-- Danh sách tiêu chí thẩm định -->
-                <div id="tieuChiSection" style="display: none; margin-top: 20px;">
-                    <h3>📊 Đánh giá tiêu chí thẩm định</h3>
-                    <div id="tieuChiList"></div>
-                    <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
-                        <strong>Tổng điểm: <span id="totalScore">0</span></strong><br>
-                        <strong>Mức rủi ro: <span id="riskLevel">-</span></strong><br>
-                        <strong>Phí bảo hiểm: <span id="phiBaoHiem">-</span></strong>
-                    </div>
+                    <select id="goiBaoHiemId" required></select>
                 </div>
                 
                 <div class="form-group">
                     <label for="ghiChu">Ghi chú</label>
-                    <textarea id="ghiChu" rows="3"></textarea>
+                    <textarea id="ghiChu" rows="3" placeholder="Ghi chú về hồ sơ (tùy chọn)"></textarea>
+                </div>
+                
+                <div style="padding: 15px; background: #e3f2fd; border-left: 4px solid #2196F3; border-radius: 4px; margin-bottom: 15px;">
+                    <strong>ℹ️ Lưu ý:</strong> Hệ thống sẽ tự động tính điểm thẩm định dựa trên thông tin khách hàng và xe.
                 </div>
                 <button type="submit" class="btn btn-primary">Tạo hồ sơ</button>
                 <button type="button" class="btn" onclick="closeModal()" style="margin-left: 10px;">Hủy</button>

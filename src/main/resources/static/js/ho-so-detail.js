@@ -69,18 +69,74 @@ function displayChiTietThamDinh(chiTietList) {
     const container = document.getElementById('chiTietThamDinh');
     if (!container) return;
     
-    let html = '<h3>📋 Chi tiết đánh giá</h3><table style="width:100%; border-collapse:collapse;">';
-    html += '<tr style="background:#f0f0f0;"><th style="padding:8px; border:1px solid #ddd;">Tiêu chí</th><th style="padding:8px; border:1px solid #ddd;">Điểm</th><th style="padding:8px; border:1px solid #ddd;">Ghi chú</th></tr>';
+    // Tính tổng điểm và tổng điểm tối đa
+    let tongDiem = 0;
+    let tongDiemToiDa = 0;
+    chiTietList.forEach(ct => {
+        tongDiem += ct.diem || 0;
+        tongDiemToiDa += ct.tieuChi ? ct.tieuChi.diemToiDa : 0;
+    });
+    
+    let html = '<h3>📋 Chi tiết đánh giá từng tiêu chí</h3>';
+    html += '<table style="width:100%; border-collapse:collapse; margin-bottom:20px;">';
+    html += '<thead><tr style="background:#3498db; color:white;">';
+    html += '<th style="padding:12px; border:1px solid #ddd; text-align:left;">Tiêu chí</th>';
+    html += '<th style="padding:12px; border:1px solid #ddd; text-align:center; width:120px;">Điểm</th>';
+    html += '<th style="padding:12px; border:1px solid #ddd; text-align:center; width:100px;">% Điểm</th>';
+    html += '<th style="padding:12px; border:1px solid #ddd; text-align:left;">Ghi chú</th>';
+    html += '</tr></thead><tbody>';
     
     chiTietList.forEach(ct => {
-        html += `<tr>
-            <td style="padding:8px; border:1px solid #ddd;">${ct.tieuChi ? ct.tieuChi.tenTieuChi : 'N/A'}</td>
-            <td style="padding:8px; border:1px solid #ddd; text-align:center;">${ct.diem || 0}</td>
-            <td style="padding:8px; border:1px solid #ddd;">${ct.ghiChu || ''}</td>
+        const diem = ct.diem || 0;
+        const diemToiDa = ct.tieuChi ? ct.tieuChi.diemToiDa : 0;
+        const phanTram = diemToiDa > 0 ? Math.round((diem / diemToiDa) * 100) : 0;
+        const ghiChu = ct.ghiChu || (diem > 0 ? '🤖 Tự động' : '-');
+        
+        // Màu sắc theo % điểm
+        let bgColor = '#f8f9fa';
+        if (phanTram >= 70) bgColor = '#ffebee'; // Đỏ nhạt
+        else if (phanTram >= 40) bgColor = '#fff3e0'; // Cam nhạt
+        else if (phanTram > 0) bgColor = '#fff9c4'; // Vàng nhạt
+        
+        html += `<tr style="background:${bgColor};">
+            <td style="padding:10px; border:1px solid #ddd;">
+                <strong>${ct.tieuChi ? ct.tieuChi.tenTieuChi : 'N/A'}</strong>
+                ${ct.tieuChi && ct.tieuChi.moTa ? `<br><small style="color:#666;">${ct.tieuChi.moTa}</small>` : ''}
+            </td>
+            <td style="padding:10px; border:1px solid #ddd; text-align:center;">
+                <strong style="font-size:16px; color:${phanTram >= 70 ? '#e74c3c' : phanTram >= 40 ? '#f39c12' : '#27ae60'};">${diem}</strong> / ${diemToiDa}
+            </td>
+            <td style="padding:10px; border:1px solid #ddd; text-align:center;">
+                <span style="font-weight:bold; color:${phanTram >= 70 ? '#e74c3c' : phanTram >= 40 ? '#f39c12' : '#27ae60'};">${phanTram}%</span>
+            </td>
+            <td style="padding:10px; border:1px solid #ddd; font-style:italic; color:#666;">${ghiChu}</td>
         </tr>`;
     });
     
-    html += '</table>';
+    // Tổng kết
+    const tongPhanTram = tongDiemToiDa > 0 ? Math.round((tongDiem / tongDiemToiDa) * 100) : 0;
+    html += `<tr style="background:#ecf0f1; font-weight:bold;">
+        <td style="padding:12px; border:1px solid #ddd;">TỔNG CỘNG</td>
+        <td style="padding:12px; border:1px solid #ddd; text-align:center; font-size:18px; color:#2c3e50;">
+            ${tongDiem} / ${tongDiemToiDa}
+        </td>
+        <td style="padding:12px; border:1px solid #ddd; text-align:center; font-size:18px; color:${tongPhanTram >= 50 ? '#e74c3c' : tongPhanTram >= 25 ? '#f39c12' : '#27ae60'};">
+            ${tongPhanTram}%
+        </td>
+        <td style="padding:12px; border:1px solid #ddd;"></td>
+    </tr>`;
+    
+    html += '</tbody></table>';
+    
+    // Thêm chú thích
+    html += '<div style="padding:15px; background:#e8f5e9; border-left:4px solid #4caf50; border-radius:4px; margin-top:15px;">';
+    html += '<strong>📊 Giải thích:</strong><br>';
+    html += '• <strong>Điểm:</strong> Điểm đạt được / Điểm tối đa của tiêu chí<br>';
+    html += '• <strong>% Điểm:</strong> Tỷ lệ phần trăm điểm đạt được<br>';
+    html += '• <strong>Ghi chú:</strong> 🤖 = Tự động tính, còn lại là ghi chú thủ công<br>';
+    html += '• <strong>Màu nền:</strong> Xanh nhạt (an toàn) → Vàng (cảnh báo) → Cam (rủi ro) → Đỏ (nguy hiểm)';
+    html += '</div>';
+    
     container.innerHTML = html;
 }
 

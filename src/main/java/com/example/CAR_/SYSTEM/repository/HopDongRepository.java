@@ -77,4 +77,9 @@ public interface HopDongRepository extends JpaRepository<HopDong, Long> {
            "GROUP BY FUNCTION('MONTH', h.ngayHetHan), h.trangThai " +
            "ORDER BY month")
     List<Object[]> countRenewalByMonth(@Param("fromDate") LocalDate fromDate);
+    
+    // Validation queries
+    long countByXeId(Long xeId);
+    long countByGoiBaoHiemId(Long goiBaoHiemId);
+    long countByKhachHangId(Long khachHangId);
 }
