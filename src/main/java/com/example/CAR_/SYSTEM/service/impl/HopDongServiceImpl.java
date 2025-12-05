@@ -62,6 +62,12 @@ public class HopDongServiceImpl implements HopDongService {
         // Tính phí bảo hiểm
         BigDecimal phiBaoHiem = calculatePhiBaoHiem(hoSo);
         
+        // Tự động tính ngày hết hạn nếu không được cung cấp (mặc định 1 năm sau ngày hiệu lực)
+        LocalDate ngayHetHan = dto.getNgayHetHan();
+        if (ngayHetHan == null && dto.getNgayHieuLuc() != null) {
+            ngayHetHan = dto.getNgayHieuLuc().plusYears(1);
+        }
+        
         HopDong hopDong = HopDong.builder()
                 .maHD(maHD)
                 .khachHang(hoSo.getKhachHang())
@@ -70,7 +76,7 @@ public class HopDongServiceImpl implements HopDongService {
                 .goiBaoHiem(hoSo.getGoiBaoHiem())
                 .ngayKy(dto.getNgayKy())
                 .ngayHieuLuc(dto.getNgayHieuLuc())
-                .ngayHetHan(dto.getNgayHetHan())
+                .ngayHetHan(ngayHetHan)
                 .tongPhiBaoHiem(phiBaoHiem)
                 .tongDaThanhToan(BigDecimal.ZERO)
                 .trangThai(TrangThaiHopDong.DRAFT)
@@ -103,8 +109,14 @@ public class HopDongServiceImpl implements HopDongService {
             throw new RuntimeException("Chỉ có thể tái tục hợp đồng đang hiệu lực hoặc đã hết hạn");
         }
         
+        // Tự động tính ngày hết hạn nếu không được cung cấp (mặc định 1 năm sau ngày hiệu lực)
+        LocalDate ngayHetHan = dto.getNgayHetHan();
+        if (ngayHetHan == null && dto.getNgayHieuLuc() != null) {
+            ngayHetHan = dto.getNgayHieuLuc().plusYears(1);
+        }
+        
         // Validate renewal dates
-        validateRenewalDates(hopDongCu, dto);
+        validateRenewalDates(hopDongCu, dto, ngayHetHan);
         
         Long nextSequence = hopDongRepository.count() + 1;
         String maHD = CodeGenerator.generateMaHD(nextSequence);
@@ -117,7 +129,7 @@ public class HopDongServiceImpl implements HopDongService {
                 .goiBaoHiem(hopDongCu.getGoiBaoHiem())
                 .ngayKy(dto.getNgayKy())
                 .ngayHieuLuc(dto.getNgayHieuLuc())
-                .ngayHetHan(dto.getNgayHetHan())
+                .ngayHetHan(ngayHetHan)
                 .tongPhiBaoHiem(hopDongCu.getTongPhiBaoHiem())
                 .tongDaThanhToan(BigDecimal.ZERO)
                 .trangThai(TrangThaiHopDong.DRAFT)
@@ -164,7 +176,7 @@ public class HopDongServiceImpl implements HopDongService {
         return hoSo.getGoiBaoHiem().getPhiCoBan().multiply(maTran.getHeSoPhi());
     }
     
-    private void validateRenewalDates(HopDong hopDongCu, HopDongRenewDTO dto) {
+    private void validateRenewalDates(HopDong hopDongCu, HopDongRenewDTO dto, LocalDate ngayHetHan) {
         // Validate ngayKy must be after or equal to old contract's ngayHetHan
         if (dto.getNgayKy().isBefore(hopDongCu.getNgayHetHan())) {
             throw new RuntimeException("Ngày ký hợp đồng mới phải sau hoặc bằng ngày hết hạn của hợp đồng cũ (" + 
@@ -177,8 +189,8 @@ public class HopDongServiceImpl implements HopDongService {
         }
         
         // Validate ngayHetHan must be after ngayHieuLuc
-        if (dto.getNgayHetHan().isBefore(dto.getNgayHieuLuc()) || 
-            dto.getNgayHetHan().isEqual(dto.getNgayHieuLuc())) {
+        if (ngayHetHan != null && (ngayHetHan.isBefore(dto.getNgayHieuLuc()) || 
+            ngayHetHan.isEqual(dto.getNgayHieuLuc()))) {
             throw new RuntimeException("Ngày hết hạn phải sau ngày hiệu lực");
         }
         
@@ -189,9 +201,11 @@ public class HopDongServiceImpl implements HopDongService {
         }
         
         // Validate contract duration (at least 1 day, recommended at least 30 days)
-        long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(dto.getNgayHieuLuc(), dto.getNgayHetHan());
-        if (daysBetween < 30) {
-            throw new RuntimeException("Thời hạn hợp đồng phải ít nhất 30 ngày (hiện tại: " + daysBetween + " ngày)");
+        if (ngayHetHan != null) {
+            long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(dto.getNgayHieuLuc(), ngayHetHan);
+            if (daysBetween < 30) {
+                throw new RuntimeException("Thời hạn hợp đồng phải ít nhất 30 ngày (hiện tại: " + daysBetween + " ngày)");
+            }
         }
     }
 }

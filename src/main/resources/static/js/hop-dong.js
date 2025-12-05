@@ -9,6 +9,17 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         await saveHopDong();
     });
+    
+    // Tự động tính ngày hết hạn khi chọn ngày hiệu lực
+    document.getElementById('ngayHieuLuc').addEventListener('change', function() {
+        const ngayHieuLuc = this.value;
+        if (ngayHieuLuc) {
+            const date = new Date(ngayHieuLuc);
+            date.setFullYear(date.getFullYear() + 1);
+            const ngayHetHan = date.toISOString().split('T')[0];
+            document.getElementById('ngayHetHan').value = ngayHetHan;
+        }
+    });
 });
 
 async function loadHoSoThamDinh() {
