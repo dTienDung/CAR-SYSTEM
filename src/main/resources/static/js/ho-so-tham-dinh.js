@@ -226,14 +226,10 @@ function calculatePhiBaoHiem(riskScore) {
 
 async function loadHoSo() {
     try {
-        const trangThai = document.getElementById('trangThaiFilter').value;
         const riskLevel = document.getElementById('riskLevelFilter').value;
         
         let endpoint = '/ho-so-tham-dinh';
-        const params = [];
-        if (trangThai) params.push(`trangThai=${trangThai}`);
-        if (riskLevel) params.push(`riskLevel=${riskLevel}`);
-        if (params.length > 0) endpoint += '?' + params.join('&');
+        if (riskLevel) endpoint += `?riskLevel=${riskLevel}`;
         
         const response = await apiGet(endpoint);
         
@@ -243,7 +239,7 @@ async function loadHoSo() {
     } catch (error) {
         console.error('Error loading ho so:', error);
         document.getElementById('hoSoTableBody').innerHTML = 
-            '<tr><td colspan="9" class="text-center">Lỗi khi tải dữ liệu</td></tr>';
+            '<tr><td colspan="8" class="text-center">Lỗi khi tải dữ liệu</td></tr>';
     }
 }
 
@@ -255,7 +251,7 @@ function displayHoSo(hoSoList) {
     const tbody = document.getElementById('hoSoTableBody');
     
     if (hoSoList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="text-center">Không có dữ liệu</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">Không có dữ liệu</td></tr>';
         return;
     }
     
@@ -267,7 +263,6 @@ function displayHoSo(hoSoList) {
             <td>${hs.goiBaoHiem ? hs.goiBaoHiem.tenGoi : 'N/A'}</td>
             <td>${hs.riskScore}</td>
             <td><span class="badge badge-${getRiskLevelColor(hs.riskLevel)}">${hs.riskLevel}</span></td>
-            <td>${hs.trangThai}</td>
             <td>${formatCurrency(hs.phiBaoHiem)}</td>
             <td>
                 <button class="btn btn-sm btn-primary" onclick="viewHoSo(${hs.id})">Xem</button>
@@ -364,14 +359,10 @@ async function calculateRiskScore(id) {
 
 async function exportToExcel() {
     try {
-        const trangThai = document.getElementById('trangThaiFilter').value;
         const riskLevel = document.getElementById('riskLevelFilter').value;
         
         let endpoint = '/ho-so-tham-dinh/export';
-        const params = [];
-        if (trangThai) params.push(`trangThai=${trangThai}`);
-        if (riskLevel) params.push(`riskLevel=${riskLevel}`);
-        if (params.length > 0) endpoint += '?' + params.join('&');
+        if (riskLevel) endpoint += `?riskLevel=${riskLevel}`;
         
         // Create download link
         const token = localStorage.getItem('token');

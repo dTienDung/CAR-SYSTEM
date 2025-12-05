@@ -54,7 +54,6 @@ let chart5Instance = null;
 async function loadAllCharts() {
     await loadChart1Lifecycle();
     await loadChart2Result();
-    await loadChart3DoanhThu();
     await loadChart4TaiTuc();
     await loadChart5Risk();
 }
@@ -207,90 +206,6 @@ async function loadChart2Result() {
         });
     } catch (error) {
         console.error('Error loading chart 2:', error);
-    }
-}
-
-// Handle date range change
-function handleDateRangeChange() {
-    const daysSelect = document.getElementById('daysSelect');
-    const customDateRange = document.getElementById('customDateRange');
-    
-    if (daysSelect.value === 'custom') {
-        customDateRange.style.display = 'flex';
-        // Set default start date to 30 days ago
-        const defaultDate = new Date();
-        defaultDate.setDate(defaultDate.getDate() - 30);
-        document.getElementById('startDate').value = defaultDate.toISOString().split('T')[0];
-    } else {
-        customDateRange.style.display = 'none';
-        loadChart3DoanhThu();
-    }
-}
-
-// CHART 3: Doanh thu Timeline (Vertical Bar)
-async function loadChart3DoanhThu() {
-    try {
-        const daysSelect = document.getElementById('daysSelect').value;
-        let endpoint = '/bao-cao/doanh-thu-timeline';
-        
-        if (daysSelect === 'custom') {
-            const startDate = document.getElementById('startDate').value;
-            if (!startDate) {
-                alert('Vui lòng chọn ngày bắt đầu');
-                return;
-            }
-            endpoint += `?startDate=${startDate}`;
-        } else {
-            endpoint += `?days=${daysSelect}`;
-        }
-        
-        const response = await apiGet(endpoint);
-        if (!response.success || !response.data) return;
-        
-        const { labels, data } = response.data;
-        
-        if (chart3Instance) chart3Instance.destroy();
-        
-        const ctx = document.getElementById('chart3DoanhThu').getContext('2d');
-        chart3Instance = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Thực thu (VNĐ)',
-                    data: data,
-                    backgroundColor: 'rgba(102, 126, 234, 0.8)',
-                    borderColor: 'rgba(102, 126, 234, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return value.toLocaleString() + ' đ';
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return 'Thực thu: ' + context.parsed.y.toLocaleString() + ' VNĐ';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    } catch (error) {
-        console.error('Error loading chart 3:', error);
     }
 }
 

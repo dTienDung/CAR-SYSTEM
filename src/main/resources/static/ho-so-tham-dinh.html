@@ -32,18 +32,11 @@
         </div>
 
         <div class="search-bar">
-            <select id="trangThaiFilter" onchange="filterHoSo()">
-                <option value="">Tất cả trạng thái</option>
-                <option value="MOI_TAO">Mới tạo</option>
-                <option value="DANG_THAM_DINH">Đang thẩm định</option>
-                <option value="CHAP_NHAN">Chấp nhận</option>
-                <option value="TU_CHOI">Từ chối</option>
-            </select>
             <select id="riskLevelFilter" onchange="filterHoSo()">
                 <option value="">Tất cả mức rủi ro</option>
-                <option value="CHAP_NHAN">Chấp nhận</option>
-                <option value="XEM_XET">Xem xét</option>
-                <option value="TU_CHOI">Từ chối</option>
+                <option value="CHAP_NHAN">🟢 Chấp nhận (< 15 điểm)</option>
+                <option value="XEM_XET">🟡 Xem xét (15-24 điểm)</option>
+                <option value="TU_CHOI">🔴 Từ chối (≥ 25 điểm)</option>
             </select>
             <button class="btn btn-success" onclick="exportToExcel()" style="margin-left: auto;">📥 Xuất Excel</button>
         </div>
@@ -58,13 +51,12 @@
                         <th>Gói BH</th>
                         <th>Risk Score</th>
                         <th>Risk Level</th>
-                        <th>Trạng thái</th>
                         <th>Phí BH</th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody id="hoSoTableBody">
-                    <tr><td colspan="9" class="text-center">Đang tải...</td></tr>
+                    <tr><td colspan="8" class="text-center">Đang tải...</td></tr>
                 </tbody>
             </table>
         </div>

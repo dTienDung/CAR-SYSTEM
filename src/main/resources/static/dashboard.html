@@ -76,27 +76,6 @@
             </div>
         </div>
 
-        <!-- Chart 3: Doanh thu Timeline -->
-        <div class="chart-container" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-top: 30px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-                <h3 style="color: #667eea; margin: 0;">💰 Doanh thu Thực thu</h3>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <select id="daysSelect" style="padding: 8px; border-radius: 6px; border: 1px solid #ddd;" onchange="handleDateRangeChange()">
-                        <option value="7">7 ngày</option>
-                        <option value="14">14 ngày</option>
-                        <option value="21" selected>21 ngày</option>
-                        <option value="custom">Tùy chỉnh</option>
-                    </select>
-                    <div id="customDateRange" style="display: none; gap: 10px; align-items: center;">
-                        <label style="font-size: 14px;">Từ ngày:</label>
-                        <input type="date" id="startDate" style="padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
-                        <button class="btn btn-sm btn-primary" onclick="loadChart3DoanhThu()" style="padding: 8px 16px;">Áp dụng</button>
-                    </div>
-                </div>
-            </div>
-            <canvas id="chart3DoanhThu"></canvas>
-        </div>
-
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px;">
             <!-- Chart 4: Tỷ lệ Tái tục -->
             <div class="chart-container" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
