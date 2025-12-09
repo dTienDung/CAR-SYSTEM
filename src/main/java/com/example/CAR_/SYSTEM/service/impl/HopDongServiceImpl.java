@@ -56,17 +56,20 @@ public class HopDongServiceImpl implements HopDongService {
             throw new RuntimeException("Chỉ có thể tạo hợp đồng từ hồ sơ đã CHẤP NHẬN");
         }
         
-        Long nextSequence = hopDongRepository.count() + 1;
-        String maHD = CodeGenerator.generateMaHD(nextSequence);
-        
-        // Tính phí bảo hiểm
-        BigDecimal phiBaoHiem = calculatePhiBaoHiem(hoSo);
-        
         // Tự động tính ngày hết hạn nếu không được cung cấp (mặc định 1 năm sau ngày hiệu lực)
         LocalDate ngayHetHan = dto.getNgayHetHan();
         if (ngayHetHan == null && dto.getNgayHieuLuc() != null) {
             ngayHetHan = dto.getNgayHieuLuc().plusYears(1);
         }
+        
+        // Validate dates khi tạo hợp đồng
+        validateContractDates(dto.getNgayKy(), dto.getNgayHieuLuc(), ngayHetHan);
+        
+        Long nextSequence = hopDongRepository.count() + 1;
+        String maHD = CodeGenerator.generateMaHD(nextSequence);
+        
+        // Tính phí bảo hiểm
+        BigDecimal phiBaoHiem = calculatePhiBaoHiem(hoSo);
         
         HopDong hopDong = HopDong.builder()
                 .maHD(maHD)
@@ -91,10 +94,20 @@ public class HopDongServiceImpl implements HopDongService {
     public HopDong update(Long id, HopDongDTO dto) {
         HopDong hopDong = getById(id);
         
+        // Chỉ cho phép cập nhật khi hợp đồng ở trạng thái DRAFT
+        if (hopDong.getTrangThai() != TrangThaiHopDong.DRAFT) {
+            throw new RuntimeException("Chỉ có thể cập nhật hợp đồng ở trạng thái NHÁP (DRAFT). " +
+                "Trạng thái hiện tại: " + hopDong.getTrangThai());
+        }
+        
+        // Cập nhật các trường
         if (dto.getNgayKy() != null) hopDong.setNgayKy(dto.getNgayKy());
         if (dto.getNgayHieuLuc() != null) hopDong.setNgayHieuLuc(dto.getNgayHieuLuc());
         if (dto.getNgayHetHan() != null) hopDong.setNgayHetHan(dto.getNgayHetHan());
         if (dto.getGhiChu() != null) hopDong.setGhiChu(dto.getGhiChu());
+        
+        // Validate dates sau khi cập nhật
+        validateContractDates(hopDong.getNgayKy(), hopDong.getNgayHieuLuc(), hopDong.getNgayHetHan());
         
         return hopDongRepository.save(hopDong);
     }
@@ -205,6 +218,56 @@ public class HopDongServiceImpl implements HopDongService {
             long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(dto.getNgayHieuLuc(), ngayHetHan);
             if (daysBetween < 30) {
                 throw new RuntimeException("Thời hạn hợp đồng phải ít nhất 30 ngày (hiện tại: " + daysBetween + " ngày)");
+            }
+        }
+    }
+    
+    /**
+     * Validate contract dates for create and update operations
+     * @param ngayKy Ngày ký hợp đồng
+     * @param ngayHieuLuc Ngày hiệu lực
+     * @param ngayHetHan Ngày hết hạn
+     */
+    private void validateContractDates(LocalDate ngayKy, LocalDate ngayHieuLuc, LocalDate ngayHetHan) {
+        // Validate required fields
+        if (ngayKy == null) {
+            throw new RuntimeException("Ngày ký hợp đồng không được để trống");
+        }
+        if (ngayHieuLuc == null) {
+            throw new RuntimeException("Ngày hiệu lực không được để trống");
+        }
+        
+        // Validate ngày ký không được trong quá khứ quá xa (ví dụ: không quá 1 năm trước)
+        LocalDate oneYearAgo = LocalDate.now().minusYears(1);
+        if (ngayKy.isBefore(oneYearAgo)) {
+            throw new RuntimeException("Ngày ký hợp đồng không hợp lệ (quá xa trong quá khứ)");
+        }
+        
+        // Validate ngày hiệu lực phải sau hoặc bằng ngày ký
+        if (ngayHieuLuc.isBefore(ngayKy)) {
+            throw new RuntimeException("Ngày hiệu lực phải sau hoặc bằng ngày ký. " +
+                "Ngày ký: " + ngayKy + ", Ngày hiệu lực: " + ngayHieuLuc);
+        }
+        
+        // Validate ngày hết hạn (nếu có)
+        if (ngayHetHan != null) {
+            // Ngày hết hạn phải sau ngày hiệu lực
+            if (ngayHetHan.isBefore(ngayHieuLuc) || ngayHetHan.isEqual(ngayHieuLuc)) {
+                throw new RuntimeException("Ngày hết hạn phải sau ngày hiệu lực. " +
+                    "Ngày hiệu lực: " + ngayHieuLuc + ", Ngày hết hạn: " + ngayHetHan);
+            }
+            
+            // Validate thời hạn hợp đồng tối thiểu 30 ngày
+            long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(ngayHieuLuc, ngayHetHan);
+            if (daysBetween < 30) {
+                throw new RuntimeException("Thời hạn hợp đồng phải ít nhất 30 ngày. " +
+                    "Hiện tại: " + daysBetween + " ngày");
+            }
+            
+            // Validate thời hạn hợp đồng không quá dài (ví dụ: không quá 5 năm)
+            if (daysBetween > 1825) { // 5 years
+                throw new RuntimeException("Thời hạn hợp đồng không được vượt quá 5 năm. " +
+                    "Hiện tại: " + daysBetween + " ngày");
             }
         }
     }
