@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.example.CAR_.SYSTEM.service.impl.ThanhToanServiceImpl;
-import com.example.CAR_.SYSTEM.service.impl.TieuChiThamDinhServiceImpl;
 
 @Slf4j
 @RestController
@@ -35,7 +34,6 @@ import com.example.CAR_.SYSTEM.service.impl.TieuChiThamDinhServiceImpl;
 @RequiredArgsConstructor
 @RequireRole({Role.ADMIN, Role.MANAGER})
 public class BaoCaoController {
-
 
     private final HoSoThamDinhServiceImpl hoSoThamDinhServiceImpl;
     private final ThanhToanServiceImpl thanhToanServiceImpl;
