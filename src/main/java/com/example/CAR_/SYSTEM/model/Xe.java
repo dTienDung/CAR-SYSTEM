@@ -76,9 +76,5 @@ public class Xe {
     @OneToMany(mappedBy = "xe", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     @Builder.Default
-    private List<LichSuTaiNan> lichSuTaiNan = new ArrayList<>();
-    @OneToMany(mappedBy = "xe", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    @Builder.Default
     private List<HoSoThamDinh> danhSachHoSo = new ArrayList<>();
 }
