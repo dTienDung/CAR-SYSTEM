@@ -11,6 +11,7 @@ DELETE FROM thanh_toan;
 DELETE FROM hop_dong;
 DELETE FROM chi_tiet_tham_dinh;
 DELETE FROM ho_so_tham_dinh;
+DELETE FROM lich_su_tai_nan;
 DELETE FROM xe;
 DELETE FROM khach_hang;
 DELETE FROM ma_tran_tinh_phi;
