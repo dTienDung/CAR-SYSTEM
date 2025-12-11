@@ -50,11 +50,13 @@ public class DatabaseInitializer implements ApplicationRunner {
         if (oldCount > 0) {
             log.info("Tìm thấy {} tiêu chí cũ, đang xóa để đồng bộ với constants...", oldCount);
             tieuChiThamDinhRepository.deleteAll();
+            tieuChiThamDinhRepository.flush(); // Force commit DELETE
         }
         
         // Insert từ constants
         for (TieuChiThamDinhConstants.TieuChiData data : TieuChiThamDinhConstants.TIEU_CHI_LIST) {
             TieuChiThamDinh entity = data.toEntity();
+            entity.setId(null); // Đảm bảo Hibernate sẽ persist thay vì merge
             tieuChiThamDinhRepository.save(entity);
             log.info("  ✓ Đã seed: {} - {} ({}đ)", entity.getMaTieuChi(), entity.getTenTieuChi(), entity.getDiemToiDa());
         }
@@ -75,11 +77,13 @@ public class DatabaseInitializer implements ApplicationRunner {
         if (oldCount > 0) {
             log.info("Tìm thấy {} ma trận cũ, đang xóa để đồng bộ với constants...", oldCount);
             maTranTinhPhiRepository.deleteAll();
+            maTranTinhPhiRepository.flush(); // Force commit DELETE
         }
         
         // Insert từ constants
         for (MaTranTinhPhiConstants.MaTranData data : MaTranTinhPhiConstants.MA_TRAN_LIST) {
             MaTranTinhPhi entity = data.toEntity();
+            entity.setId(null); // Đảm bảo Hibernate sẽ persist thay vì merge
             maTranTinhPhiRepository.save(entity);
             log.info("  ✓ Đã seed: {}-{} điểm → hệ số {} ({})", 
                      entity.getDiemRuiRoTu(), 
