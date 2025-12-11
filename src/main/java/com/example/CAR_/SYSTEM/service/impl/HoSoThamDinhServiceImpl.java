@@ -28,7 +28,6 @@ public class HoSoThamDinhServiceImpl implements HoSoThamDinhService {
     private final GoiBaoHiemRepository goiBaoHiemRepository;
     private final TieuChiThamDinhRepository tieuChiThamDinhRepository;
     private final ChiTietThamDinhRepository chiTietThamDinhRepository;
-    private final LichSuTaiNanRepository lichSuTaiNanRepository;
     private final MaTranTinhPhiRepository maTranTinhPhiRepository;
 
 
