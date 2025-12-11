@@ -498,10 +498,17 @@
 
 5. **Decimal Precision**: Sử dụng BigDecimal với precision 15, scale 2 cho các trường tiền tệ.
 
+6. **⚠️ TIÊU CHÍ THẨM ĐỊNH & MA TRẬN TÍNH PHÍ**: 
+   - Dữ liệu đã được **HARDCODE** trong constants (không thể thay đổi qua API/UI)
+   - Xem: `TieuChiThamDinhConstants.java` và `MaTranTinhPhiConstants.java`
+   - Tự động seed vào database khi app khởi động qua `DatabaseInitializer.java`
+   - **Tiêu chí**: CT01 (Tuổi xe), CT02 (Mục đích), CT03 (Tuổi tài xế), CT04 (Giá trị xe) - Tổng 8 điểm
+   - **Ma trận phí**: 0-2đ (hệ số 1.0), 3-5đ (hệ số 1.2), ≥6đ (hệ số 1.5)
+   - **RiskLevel**: 0-2đ (CHẤP NHẬN), 3-5đ (XEM XÉT), ≥6đ (TỪ CHỐI)
+
 ---
 
 **Tổng số API Endpoints: 45+ endpoints**
 
 **Version:** 1.0.0  
 **Last Updated:** 2025-11-23
-

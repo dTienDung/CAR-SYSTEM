@@ -59,22 +59,16 @@ INSERT INTO goi_bao_hiem (id, ma_goi, ten_goi, phi_co_ban, mo_ta, active, create
 (3, 'GOI-003', 'Gói Cao cấp', 12000000, 'Bảo hiểm toàn diện + Phụ trợ', 1, NOW(), NOW());
 
 -- =====================================================
--- 5. TIÊU CHÍ THẨM ĐỊNH
+-- 5. TIÊU CHÍ THẨM ĐỊNH (ĐƯỢC SEED TỰ ĐỘNG TỪ CONSTANTS)
 -- =====================================================
-INSERT INTO tieu_chi_tham_dinh (id, ma_tieu_chi, ten_tieu_chi, diem_toi_da, mo_ta, dieu_kien, thu_tu, active, created_at, updated_at) VALUES
-(1, 'TC-001', 'Tuổi xe', 10, 'Đánh giá theo năm sản xuất', 'Xe > 10 năm: 8-10đ', 1, 1, NOW(), NOW()),
-(2, 'TC-002', 'Giá trị xe', 8, 'Đánh giá theo trị giá', 'Xe > 1tỷ: 6-8đ', 2, 1, NOW(), NOW()),
-(3, 'TC-003', 'Lịch sử tai nạn', 12, 'Số lần tai nạn', 'Mỗi lần: +4đ', 3, 1, NOW(), NOW());
+-- Dữ liệu sẽ được DatabaseInitializer tự động seed khi app khởi động
+-- Xem: TieuChiThamDinhConstants.java
 
 -- =====================================================
--- 6. MA TRẬN TÍNH PHÍ
+-- 6. MA TRẬN TÍNH PHÍ (ĐƯỢC SEED TỰ ĐỘNG TỪ CONSTANTS)
 -- =====================================================
-INSERT INTO ma_tran_tinh_phi (id, diem_rui_ro_tu, diem_rui_ro_den, he_so_phi, mo_ta, active, created_at, updated_at) VALUES
-(1, 0, 10, 1.0, 'Rủi ro thấp', 1, NOW(), NOW()),
-(2, 11, 14, 1.2, 'Rủi ro TB thấp', 1, NOW(), NOW()),
-(3, 15, 20, 1.5, 'Rủi ro TB', 1, NOW(), NOW()),
-(4, 21, 24, 1.8, 'Rủi ro TB cao', 1, NOW(), NOW()),
-(5, 25, 30, 2.2, 'Rủi ro cao', 1, NOW(), NOW());
+-- Dữ liệu sẽ được DatabaseInitializer tự động seed khi app khởi động
+-- Xem: MaTranTinhPhiConstants.java
 
 -- =====================================================
 -- 7. HỒ SƠ THẨM ĐỊNH (ĐÚNG SCHEMA)
