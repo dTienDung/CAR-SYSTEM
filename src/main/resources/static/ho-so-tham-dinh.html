@@ -34,9 +34,9 @@
         <div class="search-bar">
             <select id="riskLevelFilter" onchange="filterHoSo()">
                 <option value="">Tất cả mức rủi ro</option>
-                <option value="CHAP_NHAN">🟢 Chấp nhận (< 15 điểm)</option>
-                <option value="XEM_XET">🟡 Xem xét (15-24 điểm)</option>
-                <option value="TU_CHOI">🔴 Từ chối (≥ 25 điểm)</option>
+                <option value="CHAP_NHAN">🟢 Chấp nhận (0-2 điểm)</option>
+                <option value="XEM_XET">🟡 Xem xét (3-5 điểm)</option>
+                <option value="TU_CHOI">🔴 Từ chối (≥6 điểm)</option>
             </select>
             <button class="btn btn-success" onclick="exportToExcel()" style="margin-left: auto;">📥 Xuất Excel</button>
         </div>
