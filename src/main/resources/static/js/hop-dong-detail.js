@@ -26,25 +26,50 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 function renderHopDong(hd) {
-    // Thông tin cơ bản
+    // Thông tin hợp đồng
     setText('maHopDong', hd.maHD || '');
-    setText('tenKhachHang', hd.khachHang ? hd.khachHang.hoTen : '');
-    setText('bienSoXe', hd.xe ? hd.xe.bienSo : '');
-
-    // Ngày tháng
     setText('ngayKy', formatDate(hd.ngayKy));
+
+    // BÊN B - Thông tin khách hàng
+    if (hd.khachHang) {
+        setText('tenKhachHang', hd.khachHang.hoTen || '');
+        setText('cccdKhachHang', hd.khachHang.cccd || '');
+        setText('diaChiKhachHang', hd.khachHang.diaChi || '');
+        setText('sdtKhachHang', hd.khachHang.soDienThoai || '');
+        setText('emailKhachHang', hd.khachHang.email || '');
+    }
+
+    // Thông tin xe
+    if (hd.xe) {
+        setText('bienSoXe', hd.xe.bienSo || '');
+        setText('hangXe', hd.xe.hangXe || '');
+        setText('dongXe', hd.xe.dongXe || '');
+        setText('namSanXuat', hd.xe.namSanXuat || '');
+        setText('namDangKy', hd.xe.namDangKy || '');
+        setText('soKhung', hd.xe.soKhung || '');
+        setText('soMay', hd.xe.soMay || '');
+        setText('mauSac', hd.xe.mauSac || '');
+        setText('mucDichSuDung', hd.xe.mucDichSuDung || '');
+        setText('giaTriXe', formatCurrency(hd.xe.giaTriXe));
+    }
+
+    // Thông tin gói bảo hiểm
+    setText('tenGoiBaoHiem', hd.goiBaoHiem ? hd.goiBaoHiem.tenGoi : '');
     setText('ngayHieuLuc', formatDate(hd.ngayHieuLuc));
     setText('ngayHetHan', formatDate(hd.ngayHetHan));
 
     // Số tiền
     setText('tongPhi', formatCurrency(hd.tongPhiBaoHiem));
     setText('daThanhToan', formatCurrency(hd.tongDaThanhToan));
+    
+    // Tính số tiền còn lại
+    const conLai = (hd.tongPhiBaoHiem || 0) - (hd.tongDaThanhToan || 0);
+    setText('conLai', formatCurrency(conLai));
 
     // Trạng thái
     const statusElement = document.getElementById('trangThaiLabel');
     if (statusElement) {
         const mapping = mapTrangThaiHopDong(hd.trangThai);
-
         statusElement.classList.remove('CHO_THANH_TOAN', 'DANG_HIEU_LUC', 'HET_HAN', 'DA_HUY', 'NHAP');
         statusElement.classList.add('status', mapping.cssClass);
         statusElement.textContent = mapping.label;
@@ -80,5 +105,3 @@ function showErrorMessage(message) {
         alert(message);
     }
 }
-
-

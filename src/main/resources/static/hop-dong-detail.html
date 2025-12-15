@@ -31,17 +31,50 @@
     <div style="width:200px; border-top:1px solid #000; margin:4px auto 0 auto;"></div>
   </div>
 
-  <h2 style="text-decoration:underline;">HỢP ĐỒNG BẢO HIỂM XE</h2>
+  <h2 style="text-decoration:underline;">HỢP ĐỒNG BẢO HIỂM Ô TÔ</h2>
+  <p style="text-align:center; margin:10px 0;">Số: <b><span id="maHopDong">...</span></b></p>
+  <p style="text-align:center; margin:10px 0;">Ngày ký: <b><span id="ngayKy">...</span></b></p>
 
+  <h3 style="margin-top:30px;">BÊN A - CÔNG TY BẢO HIỂM</h3>
   <table>
-    <tr><td class="label">Mã hợp đồng:</td><td><span id="maHopDong">...</span></td></tr>
-    <tr><td class="label">Khách hàng:</td><td><span id="tenKhachHang">...</span></td></tr>
-    <tr><td class="label">Biển số xe:</td><td><span id="bienSoXe">...</span></td></tr>
-    <tr><td class="label">Ngày ký:</td><td><span id="ngayKy">...</span></td></tr>
-    <tr><td class="label">Ngày hiệu lực:</td><td><span id="ngayHieuLuc">...</span></td></tr>
-    <tr><td class="label">Ngày hết hạn:</td><td><span id="ngayHetHan">...</span></td></tr>
-    <tr><td class="label">Tổng phí:</td><td><span id="tongPhi">...</span></td></tr>
-    <tr><td class="label">Đã thanh toán:</td><td><span id="daThanhToan">...</span></td></tr>
+    <tr><td class="label">Tên công ty:</td><td><b>CÔNG TY CỔ PHẦN BẢO HIỂM TÍN AN</b></td></tr>
+    <tr><td class="label">Địa chỉ:</td><td>Tòa nhà Tín An Building, số 85 Nguyễn Chí Thanh, quận Đống Đa, thành phố Hà Nội</td></tr>
+    <tr><td class="label">Mã số thuế:</td><td>0107xxxxxx</td></tr>
+    <tr><td class="label">Đại diện pháp luật:</td><td>Ông Nguyễn Văn A - Chức vụ: Tổng Giám đốc</td></tr>
+    <tr><td class="label">Điện thoại:</td><td>(024) 3xxx xxxx</td></tr>
+    <tr><td class="label">Email:</td><td>contact@tinaninsurance.vn</td></tr>
+  </table>
+
+  <h3 style="margin-top:30px;">BÊN B - BÊN MUA BẢO HIỂM</h3>
+  <table>
+    <tr><td class="label">Họ và tên:</td><td><b><span id="tenKhachHang">...</span></b></td></tr>
+    <tr><td class="label">CCCD/CMND:</td><td><span id="cccdKhachHang">...</span></td></tr>
+    <tr><td class="label">Địa chỉ:</td><td><span id="diaChiKhachHang">...</span></td></tr>
+    <tr><td class="label">Điện thoại:</td><td><span id="sdtKhachHang">...</span></td></tr>
+    <tr><td class="label">Email:</td><td><span id="emailKhachHang">...</span></td></tr>
+  </table>
+
+  <h3 style="margin-top:30px;">THÔNG TIN XE ĐƯỢC BẢO HIỂM</h3>
+  <table>
+    <tr><td class="label">Biển số xe:</td><td><b><span id="bienSoXe">...</span></b></td></tr>
+    <tr><td class="label">Hãng xe:</td><td><span id="hangXe">...</span></td></tr>
+    <tr><td class="label">Dòng xe:</td><td><span id="dongXe">...</span></td></tr>
+    <tr><td class="label">Năm sản xuất:</td><td><span id="namSanXuat">...</span></td></tr>
+    <tr><td class="label">Năm đăng ký:</td><td><span id="namDangKy">...</span></td></tr>
+    <tr><td class="label">Số khung:</td><td><span id="soKhung">...</span></td></tr>
+    <tr><td class="label">Số máy:</td><td><span id="soMay">...</span></td></tr>
+    <tr><td class="label">Màu sắc:</td><td><span id="mauSac">...</span></td></tr>
+    <tr><td class="label">Mục đích sử dụng:</td><td><span id="mucDichSuDung">...</span></td></tr>
+    <tr><td class="label">Giá trị xe:</td><td><span id="giaTriXe">...</span></td></tr>
+  </table>
+
+  <h3 style="margin-top:30px;">THÔNG TIN GÓI BẢO HIỂM</h3>
+  <table>
+    <tr><td class="label">Gói bảo hiểm:</td><td><b><span id="tenGoiBaoHiem">...</span></b></td></tr>
+    <tr><td class="label">Thời hạn bảo hiểm:</td><td>Từ <b><span id="ngayHieuLuc">...</span></b> đến <b><span id="ngayHetHan">...</span></b></td></tr>
+    <tr><td class="label">Tổng phí bảo hiểm:</td><td><b><span id="tongPhi">...</span> VNĐ</b></td></tr>
+    <tr><td class="label">Đã thanh toán:</td><td><span id="daThanhToan">...</span> VNĐ</td></tr>
+    <tr><td class="label">Còn lại:</td><td><span id="conLai">...</span> VNĐ</td></tr>
     <tr>
       <td class="label">Trạng thái:</td>
       <td><span id="trangThaiLabel" class="status NHAP">NHÁP</span></td>
@@ -89,11 +122,18 @@ không tuân thủ quy định kỹ thuật, cố ý gây thiệt hại hoặc c
 <h3 style="margin-top:35px;">CHỮ KÝ XÁC NHẬN</h3>
   <table>
     <tr>
-      <td style="text-align:center; padding-top:30px;">
-        <b>Đại diện Hệ thống Bảo hiểm Xe</b><br><br><br> (Ký, ghi rõ họ tên)
+      <td style="text-align:center; padding-top:30px; width:50%;">
+        <b>BÊN A</b><br>
+        <b>CÔNG TY CỔ PHẦN BẢO HIỂM TÍN AN</b><br>
+        <i>(Ký, đóng dấu)</i><br><br><br><br>
+        <b>Ông Nguyễn Văn A</b><br>
+        Tổng Giám đốc
       </td>
-      <td style="text-align:center; padding-top:30px;">
-        <b>Khách hàng</b><br><br><br> (Ký, ghi rõ họ tên)
+      <td style="text-align:center; padding-top:30px; width:50%;">
+        <b>BÊN B</b><br>
+        <b>BÊN MUA BẢO HIỂM</b><br>
+        <i>(Ký, ghi rõ họ tên)</i><br><br><br><br><br>
+        <span id="chuKyKhachHang">................................</span>
       </td>
     </tr>
   </table>
