@@ -81,4 +81,3 @@ public class HoSoThamDinh {
     @Builder.Default
     private List<HopDong> danhSachHopDong = new ArrayList<>();
 }
-
