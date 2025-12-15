@@ -288,6 +288,16 @@
 - **Response:** Success message
 - **Status:** 200 OK / 404 Not Found
 
+### 6.7. Export Excel hồ sơ thẩm định
+- **Endpoint:** `GET /api/ho-so-tham-dinh/export?trangThai={trangThai}&riskLevel={riskLevel}`
+- **Query Params:**
+  - `trangThai` (optional): MOI_TAO, DANG_THAM_DINH, CHAP_NHAN, TU_CHOI, XEM_XET
+  - `riskLevel` (optional): CHAP_NHAN, XEM_XET, TU_CHOI
+- **Response:** Excel file (.xlsx)
+- **Filename:** `HoSoThamDinh_YYYYMMDD_HHmmss.xlsx`
+- **Status:** 200 OK / 500 Internal Server Error
+- **Content-Type:** `application/octet-stream`
+
 ---
 
 ## 📝 7. MODULE HỢP ĐỒNG
@@ -361,6 +371,18 @@
 - **Response:** Success message
 - **Status:** 200 OK / 404 Not Found
 
+### 7.8. Export Excel hợp đồng
+- **Endpoint:** `GET /api/hop-dong/export?trangThai={trangThai}&khachHangId={id}&fromDate={date}&toDate={date}`
+- **Query Params:**
+  - `trangThai` (optional): DRAFT, PENDING_PAYMENT, ACTIVE, EXPIRED, CANCELLED, TERMINATED, RENEWED
+  - `khachHangId` (optional): Filter theo khách hàng
+  - `fromDate` (optional): Từ ngày (format: yyyy-MM-dd)
+  - `toDate` (optional): Đến ngày (format: yyyy-MM-dd)
+- **Response:** Excel file (.xlsx)
+- **Filename:** `HopDong_YYYYMMDD_HHmmss.xlsx`
+- **Status:** 200 OK / 500 Internal Server Error
+- **Content-Type:** `application/octet-stream`
+
 ---
 
 ## 💰 8. MODULE THANH TOÁN
@@ -420,34 +442,218 @@
 
 ---
 
-## 📊 9. MODULE BÁO CÁO
+## 🚨 9. MODULE LỊCH SỬ TAI NẠN
 
-### 9.1. Báo cáo doanh thu
-- **Endpoint:** `GET /api/bao-cao/doanh-thu?fromDate={date}&toDate={date}`
+### 9.1. Lấy danh sách lịch sử tai nạn
+- **Endpoint:** `GET /api/lich-su-tai-nan?xeId={xeId}`
 - **Query Params:**
-  - `fromDate` (optional): Từ ngày (format: yyyy-MM-dd)
-  - `toDate` (optional): Đến ngày (format: yyyy-MM-dd)
-- **Response:** Report data
+  - `xeId` (optional): Lọc theo xe
+- **Response:** `List<LichSuTaiNanResponseDTO>`
+```json
+{
+  "id": "long",
+  "xeId": "long",
+  "bienSo": "string",
+  "khachHang": "string",
+  "ngayXayRa": "date",
+  "moTa": "string",
+  "thietHai": "decimal",
+  "diaDiem": "string"
+}
+```
 - **Status:** 200 OK
-- **Note:** Đang phát triển
 
-### 9.2. Báo cáo tái tục
-- **Endpoint:** `GET /api/bao-cao/tai-tuc?fromDate={date}&toDate={date}`
+### 9.2. Lấy chi tiết lịch sử tai nạn
+- **Endpoint:** `GET /api/lich-su-tai-nan/{id}`
+- **Response:** `LichSuTaiNanResponseDTO`
+- **Status:** 200 OK / 404 Not Found
+
+### 9.3. Tạo lịch sử tai nạn
+- **Endpoint:** `POST /api/lich-su-tai-nan`
+- **Request Body:**
+```json
+{
+  "xe": {
+    "id": "long (required)"
+  },
+  "ngayXayRa": "date (required, format: yyyy-MM-dd)",
+  "moTa": "string (required)",
+  "thietHai": "decimal (optional)",
+  "diaDiem": "string (optional)"
+}
+```
+- **Response:** `LichSuTaiNanResponseDTO`
+- **Status:** 201 Created / 400 Bad Request
+
+### 9.4. Xóa lịch sử tai nạn
+- **Endpoint:** `DELETE /api/lich-su-tai-nan/{id}`
+- **Response:** Success message
+- **Status:** 200 OK / 404 Not Found
+
+---
+
+## 📊 10. MODULE BÁO CÁO & DASHBOARD
+
+### 10.1. Báo cáo doanh thu chi tiết
+- **Endpoint:** `GET /api/bao-cao/doanh-thu?fromDate={date}&toDate={date}&groupBy={groupBy}`
+- **Query Params:**
+  - `fromDate` (optional): Từ ngày (format: yyyy-MM-dd, default: 30 ngày trước)
+  - `toDate` (optional): Đến ngày (format: yyyy-MM-dd, default: hôm nay)
+  - `groupBy` (optional): day | week | month (default: day)
+- **Response:**
+```json
+{
+  "tongDoanhThu": "decimal",
+  "soGiaoDich": "long",
+  "doanhThuTrungBinh": "decimal",
+  "doanhThuHomNay": "decimal",
+  "doanhThuTuanNay": "decimal",
+  "doanhThuThangNay": "decimal",
+  "timeline": {"date": "amount"},
+  "theoPhuongThucThanhToan": {"method": "amount"},
+  "theoLoai": {"THU_PHI/HOAN_PHI": "amount"},
+  "chiTiet": [{"maTT", "soTien", "phuongThuc", "ngayThanhToan"...}],
+  "fromDate": "date",
+  "toDate": "date",
+  "groupBy": "string"
+}
+```
+- **Status:** 200 OK
+
+### 10.2. Báo cáo hợp đồng
+- **Endpoint:** `GET /api/bao-cao/hop-dong?fromDate={date}&toDate={date}`
 - **Query Params:**
   - `fromDate` (optional): Từ ngày
   - `toDate` (optional): Đến ngày
-- **Response:** Report data
+- **Response:**
+```json
+{
+  "tongHopDong": "long",
+  "theoTrangThai": {"status": "count"},
+  "theoLoaiQuanHe": {"MOI/TAI_TUC": "count"},
+  "tongPhiBaoHiem": "decimal",
+  "tongDaThanhToan": "decimal",
+  "tongConNo": "decimal",
+  "hopDongSapHetHan": "long (30 ngày tới)",
+  "topGoiBaoHiem": {"goiName": "count"},
+  "chiTiet": [{"maHD", "khachHang", "xe", "tongPhi"...}],
+  "fromDate": "date",
+  "toDate": "date"
+}
+```
 - **Status:** 200 OK
-- **Note:** Đang phát triển
 
-### 9.3. Báo cáo thẩm định
+### 10.3. Báo cáo khách hàng
+- **Endpoint:** `GET /api/bao-cao/khach-hang?fromDate={date}&toDate={date}`
+- **Query Params:**
+  - `fromDate` (optional): Từ ngày
+  - `toDate` (optional): Đến ngày
+- **Response:**
+```json
+{
+  "tongKhachHang": "long",
+  "theoGioiTinh": {"gender": "count"},
+  "theoNgheNghiep": {"job": "count"},
+  "theoDoTuoi": {"Dưới 25/25-34/35-44/45-54/55+": "count"},
+  "topKhachHangNhieuXe": [{"maKH", "hoTen", "soXe"...}],
+  "topKhachHangGiaTriCao": [{"maKH", "hoTen", "tongGiaTri", "soHopDong"...}],
+  "fromDate": "date",
+  "toDate": "date"
+}
+```
+- **Status:** 200 OK
+
+### 10.4. Báo cáo thẩm định
 - **Endpoint:** `GET /api/bao-cao/tham-dinh?fromDate={date}&toDate={date}`
 - **Query Params:**
   - `fromDate` (optional): Từ ngày
   - `toDate` (optional): Đến ngày
-- **Response:** Report data
+- **Response:**
+```json
+{
+  "countByStatus": {"status": "count"},
+  "avgRiskScore": "double",
+  "totalPhi": "decimal",
+  "details": [{"maHS", "khachHang", "bienSo", "goiBaoHiem", "riskScore", "riskLevel", "trangThai", "phiBaoHiem"}]
+}
+```
 - **Status:** 200 OK
-- **Note:** Đang phát triển
+
+### 10.5. Dashboard - Vòng đời hợp đồng
+- **Endpoint:** `GET /api/bao-cao/hop-dong-lifecycle`
+- **Response:** `Map<String, Long>` - Số lượng hợp đồng theo trạng thái
+```json
+{
+  "DRAFT": 5,
+  "PENDING_PAYMENT": 10,
+  "ACTIVE": 150,
+  "EXPIRED": 30,
+  "CANCELLED": 8,
+  "RENEWED": 45
+}
+```
+- **Status:** 200 OK
+
+### 10.6. Dashboard - Kết quả thẩm định
+- **Endpoint:** `GET /api/bao-cao/tham-dinh-result`
+- **Response:** `Map<String, Long>` - Số lượng hồ sơ theo risk level
+```json
+{
+  "CHAP_NHAN": 120,
+  "XEM_XET": 45,
+  "TU_CHOI": 15
+}
+```
+- **Status:** 200 OK
+
+### 10.7. Dashboard - Timeline doanh thu
+- **Endpoint:** `GET /api/bao-cao/doanh-thu-timeline?days={days}&startDate={date}`
+- **Query Params:**
+  - `days` (optional): Số ngày (default: 21)
+  - `startDate` (optional): Ngày bắt đầu (format: yyyy-MM-dd)
+- **Response:**
+```json
+{
+  "labels": ["01/12", "02/12", "03/12"...],
+  "data": [1000000, 1500000, 2000000...],
+  "days": 21,
+  "startDate": "2025-11-01" (nếu có)
+}
+```
+- **Status:** 200 OK
+
+### 10.8. Dashboard - Tỷ lệ tái tục
+- **Endpoint:** `GET /api/bao-cao/tai-tuc-rate?months={months}`
+- **Query Params:**
+  - `months` (optional): Số tháng (default: 6)
+- **Response:**
+```json
+{
+  "labels": ["Tháng 7", "Tháng 8"...],
+  "renewed": [10, 15, 20...],
+  "expired": [5, 8, 12...]
+}
+```
+- **Status:** 200 OK
+
+### 10.9. Dashboard - Top xe rủi ro cao
+- **Endpoint:** `GET /api/bao-cao/top-risk-vehicles?limit={limit}`
+- **Query Params:**
+  - `limit` (optional): Số lượng (default: 10)
+- **Response:**
+```json
+[
+  {
+    "bienSo": "30A-12345",
+    "model": "Toyota Vios",
+    "chuXe": "Nguyễn Văn A",
+    "riskScore": 28,
+    "riskLevel": "TU_CHOI",
+    "xeId": 123
+  }
+]
+```
+- **Status:** 200 OK
 
 ---
 
@@ -508,7 +714,28 @@
 
 ---
 
-**Tổng số API Endpoints: 45+ endpoints**
+## 📊 TỔNG KẾT
 
-**Version:** 1.0.0  
-**Last Updated:** 2025-11-23
+**Tổng số API Endpoints: 58 endpoints**
+
+### Phân loại theo module:
+- 🔐 Authentication & Authorization: **3 endpoints**
+- 👥 User Management: **6 endpoints**
+- 👤 Khách hàng: **5 endpoints**
+- 🚗 Xe (Phương tiện): **5 endpoints**
+- 📦 Gói bảo hiểm: **5 endpoints**
+- 📄 Hồ sơ thẩm định: **7 endpoints** (bao gồm export Excel)
+- 📝 Hợp đồng: **8 endpoints** (bao gồm export Excel)
+- 💰 Thanh toán: **6 endpoints**
+- 🚨 Lịch sử tai nạn: **4 endpoints**
+- 📊 Báo cáo & Dashboard: **9 endpoints**
+
+### Tính năng đặc biệt:
+- ✅ Export Excel cho Hồ sơ thẩm định và Hợp đồng
+- ✅ Dashboard analytics với 5 biểu đồ thống kê
+- ✅ Báo cáo chi tiết (doanh thu, hợp đồng, khách hàng, thẩm định)
+- ✅ Risk scoring và assessment tự động
+- ✅ Auto-generated code cho tất cả entities
+
+**Version:** 2.0.0  
+**Last Updated:** 2025-12-13
