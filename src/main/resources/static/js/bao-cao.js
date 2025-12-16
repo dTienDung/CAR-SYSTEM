@@ -44,36 +44,51 @@ async function loadBaoCao(type) {
 }
 
 function renderDoanhThuReport(data, thongKeDiv, chiTietDiv, chartCanvas) {
-    // KPI Cards
+    // KPI Cards với phân tích nâng cao
+    const tangTruongColor = (data.tangTruong || 0) >= 0 ? '#4caf50' : '#f44336';
+    const tangTruongIcon = (data.tangTruong || 0) >= 0 ? '📈' : '📉';
+    
     const kpiHTML = `
         <div style="background:#fff;padding:32px;border-radius:16px;margin-bottom:24px;box-shadow:0 8px 24px rgba(0,0,0,0.15);">
             <h2 style="color:#667eea;margin-bottom:24px;font-size:24px;border-bottom:3px solid #667eea;padding-bottom:12px;">
-                💰 Báo cáo Doanh thu
+                💰 Báo cáo Doanh thu - Phân tích Chi tiết
             </h2>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:24px;">
                 <div style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
                     <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">Tổng doanh thu</div>
                     <div style="font-size:24px;font-weight:bold;">${(data.tongDoanhThu || 0).toLocaleString()} VNĐ</div>
+                    <div style="font-size:12px;margin-top:8px;opacity:0.8;">Kỳ trước: ${(data.doanhThuKyTruoc || 0).toLocaleString()} VNĐ</div>
                 </div>
                 <div style="background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
+                    <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">${tangTruongIcon} Tăng trưởng</div>
+                    <div style="font-size:24px;font-weight:bold;">${(data.tangTruong || 0).toFixed(2)}%</div>
+                    <div style="font-size:12px;margin-top:8px;opacity:0.8;">So với kỳ trước</div>
+                </div>
+                <div style="background:linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
                     <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">Hôm nay</div>
                     <div style="font-size:24px;font-weight:bold;">${(data.doanhThuHomNay || 0).toLocaleString()} VNĐ</div>
                 </div>
-                <div style="background:linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
+                <div style="background:linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
                     <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">Tuần này</div>
                     <div style="font-size:24px;font-weight:bold;">${(data.doanhThuTuanNay || 0).toLocaleString()} VNĐ</div>
                 </div>
-                <div style="background:linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
+                <div style="background:linear-gradient(135deg, #fa709a 0%, #fee140 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
                     <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">Tháng này</div>
                     <div style="font-size:24px;font-weight:bold;">${(data.doanhThuThangNay || 0).toLocaleString()} VNĐ</div>
                 </div>
-                <div style="background:linear-gradient(135deg, #fa709a 0%, #fee140 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
+                <div style="background:linear-gradient(135deg, #30cfd0 0%, #330867 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
                     <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">Số giao dịch</div>
                     <div style="font-size:28px;font-weight:bold;">${data.soGiaoDich || 0}</div>
+                    <div style="font-size:12px;margin-top:8px;opacity:0.8;">Kỳ trước: ${data.soGiaoDichKyTruoc || 0}</div>
                 </div>
-                <div style="background:linear-gradient(135deg, #30cfd0 0%, #330867 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
+                <div style="background:linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
                     <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">Trung bình/GD</div>
                     <div style="font-size:20px;font-weight:bold;">${(data.doanhThuTrungBinh || 0).toLocaleString()} VNĐ</div>
+                </div>
+                <div style="background:linear-gradient(135deg, #fc5c7d 0%, #6a82fb 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
+                    <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">⚠️ Tỷ lệ hoàn phí</div>
+                    <div style="font-size:24px;font-weight:bold;">${(data.tyLeHoanPhi || 0).toFixed(2)}%</div>
+                    <div style="font-size:12px;margin-top:8px;opacity:0.8;">${data.soGiaoDichHoanPhi || 0} giao dịch</div>
                 </div>
             </div>
         </div>
@@ -515,32 +530,47 @@ function renderKhachHangReport(data, thongKeDiv, chiTietDiv, chartCanvas) {
 }
 
 function renderHopDongReport(data, thongKeDiv, chiTietDiv, chartCanvas) {
-    // KPI Cards
+    // KPI Cards với phân tích nâng cao
     const kpiHTML = `
         <div style="background:#fff;padding:32px;border-radius:16px;margin-bottom:24px;box-shadow:0 8px 24px rgba(0,0,0,0.15);">
             <h2 style="color:#667eea;margin-bottom:24px;font-size:24px;border-bottom:3px solid #667eea;padding-bottom:12px;">
-                📄 Báo cáo Hợp đồng
+                📄 Báo cáo Hợp đồng - Phân tích Chi tiết
             </h2>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:24px;">
                 <div style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
                     <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">Tổng hợp đồng</div>
                     <div style="font-size:32px;font-weight:bold;">${data.tongHopDong || 0}</div>
+                    <div style="font-size:12px;margin-top:8px;opacity:0.8;">Hiệu lực: ${data.hopDongHieuLuc || 0}</div>
                 </div>
                 <div style="background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
                     <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">Tổng phí BH</div>
                     <div style="font-size:20px;font-weight:bold;">${(data.tongPhiBaoHiem || 0).toLocaleString()} VNĐ</div>
+                    <div style="font-size:12px;margin-top:8px;opacity:0.8;">TB: ${(data.giaTriTrungBinh || 0).toLocaleString()} VNĐ</div>
                 </div>
                 <div style="background:linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
                     <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">Đã thanh toán</div>
                     <div style="font-size:20px;font-weight:bold;">${(data.tongDaThanhToan || 0).toLocaleString()} VNĐ</div>
+                    <div style="font-size:12px;margin-top:8px;opacity:0.8;">Tỷ lệ: ${(data.tyLeThanhToan || 0).toFixed(1)}%</div>
                 </div>
                 <div style="background:linear-gradient(135deg, #fa709a 0%, #fee140 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
                     <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">Còn nợ</div>
                     <div style="font-size:20px;font-weight:bold;">${(data.tongConNo || 0).toLocaleString()} VNĐ</div>
+                    <div style="font-size:12px;margin-top:8px;opacity:0.8;">${(100 - (data.tyLeThanhToan || 0)).toFixed(1)}% chưa thu</div>
                 </div>
                 <div style="background:linear-gradient(135deg, #ff9800 0%, #ff5722 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
-                    <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">Sắp hết hạn (30 ngày)</div>
+                    <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">⚠️ Sắp hết hạn</div>
                     <div style="font-size:28px;font-weight:bold;">${data.hopDongSapHetHan || 0}</div>
+                    <div style="font-size:12px;margin-top:8px;opacity:0.8;">Trong 30 ngày tới</div>
+                </div>
+                <div style="background:linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
+                    <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">🔄 Tỷ lệ tái tục</div>
+                    <div style="font-size:24px;font-weight:bold;">${(data.tyLeTaiTuc || 0).toFixed(1)}%</div>
+                    <div style="font-size:12px;margin-top:8px;opacity:0.8;">Khách trung thành</div>
+                </div>
+                <div style="background:linear-gradient(135deg, #fc5c7d 0%, #6a82fb 100%);padding:20px;border-radius:12px;color:white;text-align:center;">
+                    <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">❌ Tỷ lệ hủy</div>
+                    <div style="font-size:24px;font-weight:bold;">${(data.tyLeHuy || 0).toFixed(2)}%</div>
+                    <div style="font-size:12px;margin-top:8px;opacity:0.8;">Cần cải thiện</div>
                 </div>
             </div>
         </div>

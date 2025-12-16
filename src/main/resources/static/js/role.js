@@ -35,7 +35,7 @@ const ROLE_PERMISSIONS = {
         thanhToan: false,
         tieuChiThamDinh: true,
         maTranTinhPhi: false,
-        baoCao: false
+        baoCao: true
     },
     SALES: {
         users: false,
@@ -47,7 +47,7 @@ const ROLE_PERMISSIONS = {
         thanhToan: false,
         tieuChiThamDinh: false,
         maTranTinhPhi: false,
-        baoCao: false
+        baoCao: true
     },
     ACCOUNTANT: {
         users: false,
@@ -59,7 +59,7 @@ const ROLE_PERMISSIONS = {
         thanhToan: true,
         tieuChiThamDinh: false,
         maTranTinhPhi: false,
-        baoCao: false
+        baoCao: true
     }
 };
 
@@ -152,4 +152,3 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     setupRoleBasedMenu();
 });
-

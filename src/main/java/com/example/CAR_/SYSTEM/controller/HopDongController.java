@@ -48,6 +48,16 @@ public class HopDongController {
         return ResponseEntity.ok(ApiResponse.success(result));
     }
     
+    @GetMapping("/chua-thanh-toan-du")
+    public ResponseEntity<ApiResponse<List<HopDong>>> getChuaThanhToanDu() {
+        List<HopDong> result = hopDongService.getAll().stream()
+                .filter(hd -> hd.getTongPhiBaoHiem() != null && 
+                             hd.getTongDaThanhToan() != null &&
+                             hd.getTongDaThanhToan().compareTo(hd.getTongPhiBaoHiem()) < 0)
+                .toList();
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
+    
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<HopDong>> getById(@PathVariable Long id) {
         try {

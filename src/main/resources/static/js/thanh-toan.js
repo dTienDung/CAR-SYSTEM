@@ -21,14 +21,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function loadHopDongList() {
     try {
-        const response = await apiGet('/hop-dong');
+        // Chỉ lấy các hợp đồng chưa thanh toán đủ
+        const response = await apiGet('/hop-dong/chua-thanh-toan-du');
         if (response.success && response.data) {
             hopDongList = response.data;
             const select = document.getElementById('hopDongId');
+            
+            if (hopDongList.length === 0) {
+                select.innerHTML = '<option value="">-- Không có hợp đồng chưa thanh toán --</option>';
+                return;
+            }
+            
             select.innerHTML = '<option value="">-- Chọn hợp đồng --</option>' +
-                hopDongList.map(hd => 
-                    `<option value="${hd.id}">${hd.maHD} - ${hd.khachHang ? hd.khachHang.hoTen : ''} (${formatCurrency(hd.tongPhiBaoHiem)})</option>`
-                ).join('');
+                hopDongList.map(hd => {
+                    const conLai = (hd.tongPhiBaoHiem || 0) - (hd.tongDaThanhToan || 0);
+                    return `<option value="${hd.id}">${hd.maHD} - ${hd.khachHang ? hd.khachHang.hoTen : ''} (Còn nợ: ${formatCurrency(conLai)})</option>`;
+                }).join('');
         }
     } catch (error) {
         console.error('Error loading hop dong:', error);
@@ -134,4 +142,3 @@ async function deleteThanhToan(id) {
         alert('Lỗi khi xóa: ' + (error.message || 'Có lỗi xảy ra'));
     }
 }
-

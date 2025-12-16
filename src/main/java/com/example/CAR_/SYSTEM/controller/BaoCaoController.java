@@ -32,7 +32,7 @@ import com.example.CAR_.SYSTEM.service.impl.ThanhToanServiceImpl;
 @RestController
 @RequestMapping("/api/bao-cao")
 @RequiredArgsConstructor
-@RequireRole({Role.ADMIN, Role.MANAGER})
+// @RequireRole({Role.ADMIN, Role.MANAGER}) // Cho phép tất cả vai trò truy cập
 public class BaoCaoController {
 
     private final HoSoThamDinhServiceImpl hoSoThamDinhServiceImpl;
@@ -166,6 +166,61 @@ public class BaoCaoController {
         result.put("toDate", toDate);
         result.put("groupBy", groupBy);
 
+        // Phân tích thêm: So sánh với kỳ trước
+        LocalDate prevFromDate = fromDate.minusDays(finalToDate.toEpochDay() - finalFromDate.toEpochDay());
+        LocalDate prevToDate = fromDate.minusDays(1);
+        
+        List<ThanhToan> prevPeriod = thanhToans.stream()
+                .filter(tt -> !tt.getCreatedAt().toLocalDate().isBefore(prevFromDate) &&
+                        !tt.getCreatedAt().toLocalDate().isAfter(prevToDate))
+                .collect(Collectors.toList());
+        
+        BigDecimal doanhThuKyTruoc = prevPeriod.stream()
+                .map(ThanhToan::getSoTien)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        BigDecimal tangTruong = doanhThuKyTruoc.compareTo(BigDecimal.ZERO) > 0 ?
+                tongDoanhThu.subtract(doanhThuKyTruoc)
+                        .divide(doanhThuKyTruoc, 4, java.math.RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100)) :
+                BigDecimal.ZERO;
+        
+        result.put("doanhThuKyTruoc", doanhThuKyTruoc);
+        result.put("tangTruong", tangTruong);
+        result.put("soGiaoDichKyTruoc", prevPeriod.size());
+        
+        // Top khách hàng đóng góp nhiều nhất
+        Map<String, BigDecimal> topKhachHang = filteredList.stream()
+                .filter(tt -> tt.getHopDong() != null && 
+                        tt.getHopDong().getHoSoThamDinh() != null && 
+                        tt.getHopDong().getHoSoThamDinh().getKhachHang() != null)
+                .collect(Collectors.groupingBy(
+                    tt -> tt.getHopDong().getHoSoThamDinh().getKhachHang().getHoTen(),
+                    Collectors.reducing(BigDecimal.ZERO, ThanhToan::getSoTien, BigDecimal::add)
+                ))
+                .entrySet().stream()
+                .sorted(Map.Entry.<String, BigDecimal>comparingByValue().reversed())
+                .limit(5)
+                .collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    Map.Entry::getValue,
+                    (e1, e2) -> e1,
+                    java.util.LinkedHashMap::new
+                ));
+        
+        result.put("topKhachHang", topKhachHang);
+        
+        // Tỷ lệ hoàn phí
+        long soGiaoDichHoanPhi = filteredList.stream().filter(ThanhToan::getIsHoanPhi).count();
+        BigDecimal tyLeHoanPhi = soGiaoDich > 0 ? 
+                BigDecimal.valueOf(soGiaoDichHoanPhi)
+                        .divide(BigDecimal.valueOf(soGiaoDich), 4, java.math.RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100)) :
+                BigDecimal.ZERO;
+        
+        result.put("soGiaoDichHoanPhi", soGiaoDichHoanPhi);
+        result.put("tyLeHoanPhi", tyLeHoanPhi);
+
         return ResponseEntity.ok(ApiResponse.success(result));
     }
     @GetMapping("/hop-dong")
@@ -269,6 +324,43 @@ public class BaoCaoController {
         result.put("chiTiet", chiTiet);
         result.put("fromDate", fromDate);
         result.put("toDate", toDate);
+
+        // Phân tích thêm
+        // Tỷ lệ thanh toán
+        BigDecimal tyLeThanhToan = tongPhiBaoHiem.compareTo(BigDecimal.ZERO) > 0 ?
+                tongDaThanhToan.divide(tongPhiBaoHiem, 4, java.math.RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100)) :
+                BigDecimal.ZERO;
+        result.put("tyLeThanhToan", tyLeThanhToan);
+        
+        // Tỷ lệ tái tục
+        long soHDTaiTuc = theoLoaiQuanHe.getOrDefault("TAI_TUC", 0L);
+        long soHDMoi = theoLoaiQuanHe.getOrDefault("MOI", 0L);
+        BigDecimal tyLeTaiTuc = (soHDTaiTuc + soHDMoi) > 0 ?
+                BigDecimal.valueOf(soHDTaiTuc)
+                        .divide(BigDecimal.valueOf(soHDTaiTuc + soHDMoi), 4, java.math.RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100)) :
+                BigDecimal.ZERO;
+        result.put("tyLeTaiTuc", tyLeTaiTuc);
+        
+        // Giá trị trung bình hợp đồng
+        BigDecimal giaTriTrungBinh = tongHopDong > 0 ?
+                tongPhiBaoHiem.divide(BigDecimal.valueOf(tongHopDong), 2, java.math.RoundingMode.HALF_UP) :
+                BigDecimal.ZERO;
+        result.put("giaTriTrungBinh", giaTriTrungBinh);
+        
+        // Hợp đồng đang hiệu lực
+        long hopDongHieuLuc = theoTrangThai.getOrDefault("ACTIVE", 0L);
+        result.put("hopDongHieuLuc", hopDongHieuLuc);
+        
+        // Hợp đồng đã hủy
+        long hopDongDaHuy = theoTrangThai.getOrDefault("CANCELLED", 0L);
+        BigDecimal tyLeHuy = tongHopDong > 0 ?
+                BigDecimal.valueOf(hopDongDaHuy)
+                        .divide(BigDecimal.valueOf(tongHopDong), 4, java.math.RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100)) :
+                BigDecimal.ZERO;
+        result.put("tyLeHuy", tyLeHuy);
 
         return ResponseEntity.ok(ApiResponse.success(result));
     }
